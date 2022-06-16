@@ -3,6 +3,8 @@ description: A displaying widget supports various types of NFT.
 version: 0.0.1
 homepage:
 
+publish_to: 'none'
+
 environment:
   sdk: ">=2.17.1 <3.0.0"
   flutter: ">=1.17.0"
@@ -10,6 +12,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
+  flutter_svg:
+    git:
+      url: https://github.com/autonomy-system/flutter_svg.git
+      ref: dfe0828aec39169276cc2722e016a2dbaa95baee
+
+  cached_network_image: ^3.2.1
+    
+  photo_view:
+    git:
+      url: https://github.com/bluefireteam/photo_view
+      ref: master
+  video_player: ^2.2.19
+  webview_flutter: ^3.0.0
+  easy_debounce: ^2.0.2+1
+  syncfusion_flutter_pdfviewer: ^20.1.57-beta
 
 dev_dependencies:
   flutter_test:
