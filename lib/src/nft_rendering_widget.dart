@@ -148,12 +148,14 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     _controller = VideoPlayerController.network(previewURL);
 
     _controller!.initialize().then((_) {
+      _stateOfRenderingWidget.previewLoaded();
       _controller?.play();
       _controller?.setLooping(true);
     });
   }
 
   VideoPlayerController? _controller;
+  final _stateOfRenderingWidget = StateOfRenderingWidget();
 
   @override
   void setRenderWidgetBuilder(RenderingWidgetBuilder renderingWidgetBuilder) {
@@ -165,6 +167,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     _controller = VideoPlayerController.network(previewURL);
 
     _controller!.initialize().then((_) {
+      _stateOfRenderingWidget.previewLoaded();
       _controller?.play();
       _controller?.setLooping(true);
     });
@@ -172,15 +175,24 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _widgetBuilder();
+    return AnimatedBuilder(
+      animation: _stateOfRenderingWidget,
+      builder: (context, child) {
+        return _widgetBuilder();
+      },
+    );
   }
 
   Widget _widgetBuilder() {
     if (_controller != null) {
-      return AspectRatio(
-        aspectRatio: _controller!.value.aspectRatio,
-        child: VideoPlayer(_controller!),
-      );
+      if (_stateOfRenderingWidget.isPreviewLoaded) {
+        return AspectRatio(
+          aspectRatio: _controller!.value.aspectRatio,
+          child: VideoPlayer(_controller!),
+        );
+      } else {
+        return loadingWidget;
+      }
     } else {
       return const SizedBox();
     }
@@ -204,6 +216,15 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   }
 }
 
+class StateOfRenderingWidget with ChangeNotifier {
+  bool isPreviewLoaded = false;
+
+  void previewLoaded() {
+    this.isPreviewLoaded = true;
+    notifyListeners();
+  }
+}
+
 /// Webview rendering widget type
 class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   WebviewNFTRenderingWidget({
@@ -213,41 +234,57 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         );
 
   WebViewController? _webViewController;
+  final _stateOfRenderingWidget = StateOfRenderingWidget();
 
   @override
   Widget build(BuildContext context) {
-    return _widgetBuilder();
+    return AnimatedBuilder(
+      animation: _stateOfRenderingWidget,
+      builder: (context, child) {
+        return _widgetBuilder();
+      },
+    );
   }
 
   Widget _widgetBuilder() {
-    return WebView(
-        key: Key(previewURL),
-        initialUrl: previewURL,
-        zoomEnabled: false,
-        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-        onWebViewCreated: (WebViewController webViewController) {
-          _webViewController = webViewController;
-        },
-        onWebResourceError: (WebResourceError error) {},
-        onPageFinished: (some) async {
-          const javascriptString = '''
+    return Stack(
+      fit: StackFit.loose,
+      children: [
+        WebView(
+            key: Key(previewURL),
+            initialUrl: previewURL,
+            zoomEnabled: false,
+            initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
+            onWebViewCreated: (WebViewController webViewController) {
+              _webViewController = webViewController;
+            },
+            onWebResourceError: (WebResourceError error) {},
+            onPageFinished: (some) async {
+              _stateOfRenderingWidget.previewLoaded();
+              const javascriptString = '''
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
                             meta.setAttribute('content', 'width=device-width');
                             document.getElementsByTagName('head')[0].appendChild(meta);
                             document.body.style.overflow = 'hidden';
                 ''';
-          await _webViewController?.runJavascript(javascriptString);
-        },
-        javascriptMode: JavascriptMode.unrestricted,
-        allowsInlineMediaPlayback: true,
-        backgroundColor: Colors.black);
+              await _webViewController?.runJavascript(javascriptString);
+            },
+            javascriptMode: JavascriptMode.unrestricted,
+            allowsInlineMediaPlayback: true,
+            backgroundColor: Colors.black),
+        if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
+          loadingWidget,
+        ]
+      ],
+    );
+    ;
   }
 
   @override
   void didPopNext() {
-    _webViewController
-        ?.runJavascript("document.getElementsByTagName('video')[0].play()");
+    _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); }");
   }
 
   @override
@@ -257,12 +294,12 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Future<bool> clearPrevious() async {
-    await _webViewController
-        ?.runJavascript("document.getElementsByTagName('video')[0].pause()");
+    await _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
     return true;
   }
 
-  _updateWebviewSize() {
+  updateWebviewSize() {
     if (_webViewController != null) {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer

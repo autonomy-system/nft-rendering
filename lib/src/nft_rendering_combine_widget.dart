@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nft_rendering/src/nft_rendering_widget.dart';
 
 // The widget can be called for nft rendering
-class NFTRenderingCombineWidget extends StatelessWidget {
+class NFTRenderingCombineWidget extends StatefulWidget {
   final String mimeType;
   final String previewURL;
   final Widget? loadingWidget;
@@ -17,23 +17,32 @@ class NFTRenderingCombineWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<StatefulWidget> createState() {
+    return _NFTRenderingCombineWidget();
+  }
+}
+
+class _NFTRenderingCombineWidget extends State<NFTRenderingCombineWidget> {
+  late INFTRenderingWidget _renderingWidget;
+
+  @override
   Widget build(BuildContext context) {
     return _buildRenderingWidget(context);
   }
 
   Widget _buildRenderingWidget(BuildContext context) {
-    // if typesOfNFTRenderingWidget doesn't have miypeType, we will return webview nft rendering
-    INFTRenderingWidget renderingWidget =
-        typesOfNFTRenderingWidget[mimeType] ?? WebviewNFTRenderingWidget();
+    // if typesOfNFTRenderingWidget doesn't have mimeType, we will return webview nft rendering
+    _renderingWidget = typesOfNFTRenderingWidget[widget.mimeType] ??
+        WebviewNFTRenderingWidget();
 
-    renderingWidget.setRenderWidgetBuilder(RenderingWidgetBuilder(
-      loadingWidget: loadingWidget,
-      errorWidget: errorWidget,
-      previewURL: previewURL,
+    _renderingWidget.setRenderWidgetBuilder(RenderingWidgetBuilder(
+      loadingWidget: widget.loadingWidget,
+      errorWidget: widget.errorWidget,
+      previewURL: widget.previewURL,
     ));
 
     return Container(
-      child: renderingWidget.build(context),
+      child: _renderingWidget.build(context),
     );
   }
 }
