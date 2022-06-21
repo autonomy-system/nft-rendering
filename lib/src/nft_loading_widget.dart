@@ -8,7 +8,7 @@ class NFTLoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: CupertinoActivityIndicator(color: Colors.white, radius: 16),
+      child: CupertinoActivityIndicator(color: Colors.blueAccent, radius: 16),
     );
   }
 }
