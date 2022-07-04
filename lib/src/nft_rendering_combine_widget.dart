@@ -32,8 +32,7 @@ class _NFTRenderingCombineWidget extends State<NFTRenderingCombineWidget> {
 
   Widget _buildRenderingWidget(BuildContext context) {
     // if typesOfNFTRenderingWidget doesn't have mimeType, we will return webview nft rendering
-    _renderingWidget = typesOfNFTRenderingWidget[widget.mimeType] ??
-        WebviewNFTRenderingWidget();
+    _renderingWidget = typesOfNFTRenderingWidget(widget.mimeType);
 
     _renderingWidget.setRenderWidgetBuilder(RenderingWidgetBuilder(
       loadingWidget: widget.loadingWidget,
