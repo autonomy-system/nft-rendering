@@ -21,6 +21,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
+List<String> _typeValues = [
+  "image",
+  "svg",
+  "video",
+  "application/pdf",
+  "webview"
+];
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
@@ -33,6 +41,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _inputPreviewUrl = "";
   String _mimeType = "";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +83,7 @@ class InputProperty extends StatefulWidget {
       : super(key: key);
 
   final Function callbackAction;
+
   @override
   State<StatefulWidget> createState() {
     return _StateInputProperty();
@@ -81,7 +91,7 @@ class InputProperty extends StatefulWidget {
 }
 
 class _StateInputProperty extends State<InputProperty> {
-  String _dropdownValue = typesOfNFTRenderingWidget.keys.toList().first;
+  String _dropdownValue = _typeValues.first;
   final TextEditingController textEdittingController = TextEditingController();
 
   @override
@@ -96,39 +106,35 @@ class _StateInputProperty extends State<InputProperty> {
   }
 
   Widget _dropdownListMimeType() {
-    if (typesOfNFTRenderingWidget.isNotEmpty) {
-      List<String> listValue = typesOfNFTRenderingWidget.keys.toList();
-      return Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8),
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: _dropdownValue,
-          icon: const Icon(
-            Icons.arrow_downward,
-            size: 18,
-            color: Colors.blueAccent,
-          ),
-          elevation: 16,
-          style: const TextStyle(color: Colors.blueAccent, fontSize: 16),
-          underline: Container(
-            height: 2,
-            color: Colors.blueAccent,
-          ),
-          onChanged: (String? newValue) {
-            setState(() {
-              _dropdownValue = newValue!;
-            });
-          },
-          items: listValue.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, right: 8),
+      child: DropdownButton<String>(
+        isExpanded: true,
+        value: _dropdownValue,
+        icon: const Icon(
+          Icons.arrow_downward,
+          size: 18,
+          color: Colors.blueAccent,
         ),
-      );
-    }
-    return const SizedBox();
+        elevation: 16,
+        style: const TextStyle(color: Colors.blueAccent, fontSize: 16),
+        underline: Container(
+          height: 2,
+          color: Colors.blueAccent,
+        ),
+        onChanged: (String? newValue) {
+          setState(() {
+            _dropdownValue = newValue!;
+          });
+        },
+        items: _typeValues.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   Widget _inputPreviewUrl() {

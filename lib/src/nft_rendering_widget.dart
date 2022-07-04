@@ -4,22 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
-import 'package:path/path.dart' as p;
 import 'package:photo_view/photo_view.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-/// Map of types nft rendering widget [INFTRenderingWidget]
+/// Get nft rendering widget by type
 /// You can add and define more types by creating classes extends [INFTRenderingWidget]
 ///
-Map<String, INFTRenderingWidget> typesOfNFTRenderingWidget = {
-  "image": ImageNFTRenderingWidget(),
-  "svg": SVGNFTRenderingWidget(),
-  "video": VideoNFTRenderingWidget(),
-  "application/pdf": PDFNFTRenderingWidget(),
-  "webview": WebviewNFTRenderingWidget(),
-};
+INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
+  switch (type) {
+    case "image":
+      return ImageNFTRenderingWidget();
+    case "svg":
+      return SVGNFTRenderingWidget();
+    case "video":
+      return VideoNFTRenderingWidget();
+    case "application/pdf":
+      return PDFNFTRenderingWidget();
+    case "webview":
+      return WebviewNFTRenderingWidget();
+    default:
+      return WebviewNFTRenderingWidget();
+  }
+}
 
 /// Class holds property of rendering widget
 class RenderingWidgetBuilder {
@@ -57,7 +65,9 @@ abstract class INFTRenderingWidget {
   Widget build(BuildContext context) => const SizedBox();
 
   void dispose();
+
   void didPopNext();
+
   Future<bool> clearPrevious();
 }
 
