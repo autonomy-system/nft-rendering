@@ -18,6 +18,8 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
       return ImageNFTRenderingWidget();
     case "svg":
       return SVGNFTRenderingWidget();
+    case 'gif':
+      return GifNFTRenderingWidget();
     case "video":
       return VideoNFTRenderingWidget();
     case "application/pdf":
@@ -144,6 +146,42 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
           placeholderBuilder: (context) => loadingWidget,
         ),
       ),
+    );
+  }
+}
+
+class GifNFTRenderingWidget extends INFTRenderingWidget {
+  GifNFTRenderingWidget({
+    RenderingWidgetBuilder? renderingWidgetBuilder,
+  }) : super(
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return _widgetBuilder();
+  }
+
+  @override
+  Future<bool> clearPrevious() {
+    return Future.value(true);
+  }
+
+  @override
+  void didPopNext() {}
+
+  @override
+  void dispose() {}
+
+  Widget _widgetBuilder() {
+    return CachedNetworkImage(
+      imageUrl: previewURL,
+      placeholder: (context, url) => loadingWidget,
+      placeholderFadeInDuration: const Duration(milliseconds: 300),
+      errorWidget: (context, url, error) => Center(
+        child: errorWidget,
+      ),
+      fit: BoxFit.cover,
     );
   }
 }
