@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
@@ -36,9 +37,13 @@ class RenderingWidgetBuilder {
   late Widget? loadingWidget;
   late Widget? errorWidget;
   late String? previewURL;
+  late BaseCacheManager? cacheManager;
 
   RenderingWidgetBuilder(
-      {this.loadingWidget, this.errorWidget, this.previewURL});
+      {this.loadingWidget,
+      this.errorWidget,
+      this.previewURL,
+      this.cacheManager});
 }
 
 /// interface of rendering widget
@@ -58,11 +63,13 @@ abstract class INFTRenderingWidget {
         renderingWidgetBuilder.loadingWidget ?? const NFTLoadingWidget();
     errorWidget = renderingWidgetBuilder.errorWidget ?? const NFTErrorWidget();
     previewURL = renderingWidgetBuilder.previewURL ?? "";
+    cacheManager = renderingWidgetBuilder.cacheManager;
   }
 
   Widget loadingWidget = const NFTLoadingWidget();
   Widget errorWidget = const NFTErrorWidget();
   String previewURL = "";
+  BaseCacheManager? cacheManager;
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -92,6 +99,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
       imageBuilder: (context, imageProvider) => PhotoView(
         imageProvider: imageProvider,
       ),
+      cacheManager: cacheManager,
       placeholder: (context, url) => loadingWidget,
       placeholderFadeInDuration: const Duration(milliseconds: 300),
       errorWidget: (context, url, error) => Center(

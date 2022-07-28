@@ -19,7 +19,7 @@ dependencies:
       ref: dfe0828aec39169276cc2722e016a2dbaa95baee
 
   cached_network_image: ^3.2.1
-    
+  flutter_cache_manager: ^3.3.0
   photo_view:
     git:
       url: https://github.com/bluefireteam/photo_view
