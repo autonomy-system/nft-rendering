@@ -1,8 +1,13 @@
+import 'dart:async';
+
+import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:photo_view/photo_view.dart';
@@ -21,6 +26,8 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
       return SVGNFTRenderingWidget();
     case 'gif':
       return GifNFTRenderingWidget();
+    case "audio":
+      return AudioNFTRenderingWidget();
     case "video":
       return VideoNFTRenderingWidget();
     case "application/pdf":
@@ -36,12 +43,14 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
 class RenderingWidgetBuilder {
   late Widget? loadingWidget;
   late Widget? errorWidget;
+  final String? thumbnailURL;
   late String? previewURL;
   late BaseCacheManager? cacheManager;
 
   RenderingWidgetBuilder(
       {this.loadingWidget,
       this.errorWidget,
+      this.thumbnailURL,
       this.previewURL,
       this.cacheManager});
 }
@@ -190,6 +199,105 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
         child: errorWidget,
       ),
       fit: BoxFit.cover,
+    );
+  }
+}
+
+class AudioNFTRenderingWidget extends INFTRenderingWidget {
+
+  String? _thumbnailURL;
+  AudioPlayer? _player;
+
+  final _progressStreamController = StreamController<double>();
+
+  @override
+  Future<bool> clearPrevious() async {
+    await _pauseAudio();
+    return true;
+  }
+
+  @override
+  void didPopNext() {
+    _resumeAudio();
+  }
+
+  @override
+  void dispose() {
+    _disposeAudioPlayer();
+  }
+
+  Future _disposeAudioPlayer() async {
+    await _player?.dispose();
+    _player = null;
+  }
+
+  Future _playAudio(String audioURL) async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      _player = AudioPlayer();
+      _player?.positionStream.listen((event) {
+        final progress =
+            event.inMilliseconds / (_player?.duration?.inMilliseconds ?? 1);
+        _progressStreamController.sink.add(progress);
+      });
+      await _player?.setLoopMode(LoopMode.all);
+      await _player?.setAudioSource(AudioSource.uri(Uri.parse(audioURL)));
+      await _player?.play();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Can't set audio source: $audioURL. Error: $e");
+      }
+    }
+  }
+
+  _pauseAudio() async {
+    await _player?.pause();
+  }
+
+  _resumeAudio() async {
+    await _player?.play();
+  }
+
+  @override
+  void setRenderWidgetBuilder(RenderingWidgetBuilder renderingWidgetBuilder) {
+    super.setRenderWidgetBuilder(renderingWidgetBuilder);
+    _thumbnailURL = renderingWidgetBuilder.thumbnailURL;
+    _disposeAudioPlayer().then((_) {
+      final audioURL = renderingWidgetBuilder.previewURL;
+      if (audioURL != null) {
+        _playAudio(audioURL);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: CachedNetworkImage(
+                imageUrl: _thumbnailURL ?? "",
+                cacheManager: cacheManager,
+                placeholder: (context, url) => loadingWidget,
+                placeholderFadeInDuration: const Duration(milliseconds: 300),
+                errorWidget: (context, url, error) => Center(
+                  child: errorWidget,
+                ),
+                fit: BoxFit.contain,
+              ),
+        ),
+        StreamBuilder<double>(
+            stream: _progressStreamController.stream,
+            builder: (context, snapshot) {
+              return LinearProgressIndicator(
+                value: snapshot.data ?? 0,
+                color: Colors.white,
+                backgroundColor: Colors.black,
+              );
+            }),
+      ],
     );
   }
 }
