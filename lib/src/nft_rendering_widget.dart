@@ -417,6 +417,7 @@ class StateOfRenderingWidget with ChangeNotifier {
   }
 
   void playingFailed() {
+    isPreviewLoaded = false;
     isPlayingFailed = true;
     notifyListeners();
   }
