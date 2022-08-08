@@ -304,17 +304,24 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
 
 /// Video rendering widget type
 class VideoNFTRenderingWidget extends INFTRenderingWidget {
+
+  String? _thumbnailURL;
+
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
           renderingWidgetBuilder: renderingWidgetBuilder,
         ) {
-    _controller = VideoPlayerController.network(previewURL);
+    runZonedGuarded(() {
+      _controller = VideoPlayerController.network(previewURL);
 
-    _controller!.initialize().then((_) {
-      _stateOfRenderingWidget.previewLoaded();
-      _controller?.play();
-      _controller?.setLooping(true);
+      _controller!.initialize().then((_) {
+        _stateOfRenderingWidget.previewLoaded();
+        _controller?.play();
+        _controller?.setLooping(true);
+      });
+    }, (error, stack) {
+      _stateOfRenderingWidget.playingFailed();
     });
   }
 
@@ -324,16 +331,21 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   @override
   void setRenderWidgetBuilder(RenderingWidgetBuilder renderingWidgetBuilder) {
     super.setRenderWidgetBuilder(renderingWidgetBuilder);
-    if (_controller != null) {
-      _controller?.dispose();
-      _controller = null;
-    }
-    _controller = VideoPlayerController.network(previewURL);
+    runZonedGuarded(() {
+      _thumbnailURL = renderingWidgetBuilder.thumbnailURL;
+      if (_controller != null) {
+        _controller?.dispose();
+        _controller = null;
+      }
+      _controller = VideoPlayerController.network(previewURL);
 
-    _controller!.initialize().then((_) {
-      _stateOfRenderingWidget.previewLoaded();
-      _controller?.play();
-      _controller?.setLooping(true);
+      _controller!.initialize().then((_) {
+        _stateOfRenderingWidget.previewLoaded();
+        _controller?.play();
+        _controller?.setLooping(true);
+      });
+    }, (error, stack) {
+      _stateOfRenderingWidget.playingFailed();
     });
   }
 
@@ -349,7 +361,21 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
   Widget _widgetBuilder() {
     if (_controller != null) {
-      if (_stateOfRenderingWidget.isPreviewLoaded) {
+      if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
+        return CachedNetworkImage(
+          imageUrl: _thumbnailURL!,
+          imageBuilder: (context, imageProvider) => PhotoView(
+            imageProvider: imageProvider,
+          ),
+          cacheManager: cacheManager,
+          placeholder: (context, url) => loadingWidget,
+          placeholderFadeInDuration: const Duration(milliseconds: 300),
+          errorWidget: (context, url, error) => Center(
+            child: errorWidget,
+          ),
+          fit: BoxFit.cover,
+        );
+      } else if (_stateOfRenderingWidget.isPreviewLoaded) {
         return AspectRatio(
           aspectRatio: _controller!.value.aspectRatio,
           child: VideoPlayer(_controller!),
@@ -382,9 +408,16 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
 class StateOfRenderingWidget with ChangeNotifier {
   bool isPreviewLoaded = false;
+  bool isPlayingFailed = false;
 
   void previewLoaded() {
-    this.isPreviewLoaded = true;
+    isPreviewLoaded = true;
+    isPlayingFailed = false;
+    notifyListeners();
+  }
+
+  void playingFailed() {
+    isPlayingFailed = true;
     notifyListeners();
   }
 }
