@@ -6,10 +6,10 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
+import 'package:nft_rendering/src/widget/svg_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
@@ -156,12 +156,12 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     return AspectRatio(
       aspectRatio: 1,
-      child: Container(
-        color: Colors.white,
-        child: SvgPicture.network(
-          previewURL,
-          placeholderBuilder: (context) => loadingWidget,
-        ),
+      child: SvgImage(
+        url: previewURL,
+        fallbackToWebView: true,
+        loadingWidgetBuilder: (context) => loadingWidget,
+        onLoaded: () {},
+        onError: () {},
       ),
     );
   }
