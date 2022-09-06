@@ -8,6 +8,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/parser.dart';
 import 'package:http/http.dart' as http;
+import 'package:nft_rendering/src/extension/xml_ext.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:xml/xml.dart';
 
@@ -132,8 +133,8 @@ Future<String> _scaleSvgImage({
     final size = data[1] as double;
     final doc = XmlDocument.parse(svg);
     final root = doc.findElements("svg").first;
-    final width = double.parse(root.getAttribute("width") ?? "");
-    final height = double.parse(root.getAttribute("height") ?? "");
+    final width = root.absoluteWidth;
+    final height = root.absoluteHeight;
     if (width < size && height < size) {
       return svgData;
     } else {
