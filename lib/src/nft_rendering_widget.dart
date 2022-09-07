@@ -46,13 +46,16 @@ class RenderingWidgetBuilder {
   final String? thumbnailURL;
   late String? previewURL;
   late BaseCacheManager? cacheManager;
+  late dynamic controller;
 
-  RenderingWidgetBuilder(
-      {this.loadingWidget,
-      this.errorWidget,
-      this.thumbnailURL,
-      this.previewURL,
-      this.cacheManager});
+  RenderingWidgetBuilder({
+    this.loadingWidget,
+    this.errorWidget,
+    this.thumbnailURL,
+    this.previewURL,
+    this.cacheManager,
+    this.controller,
+  });
 }
 
 /// interface of rendering widget
@@ -64,6 +67,7 @@ abstract class INFTRenderingWidget {
       errorWidget =
           renderingWidgetBuilder.errorWidget ?? const NFTErrorWidget();
       previewURL = renderingWidgetBuilder.previewURL ?? "";
+      controller = renderingWidgetBuilder.controller;
     }
   }
 
@@ -73,11 +77,13 @@ abstract class INFTRenderingWidget {
     errorWidget = renderingWidgetBuilder.errorWidget ?? const NFTErrorWidget();
     previewURL = renderingWidgetBuilder.previewURL ?? "";
     cacheManager = renderingWidgetBuilder.cacheManager;
+    controller = renderingWidgetBuilder.controller;
   }
 
   Widget loadingWidget = const NFTLoadingWidget();
   Widget errorWidget = const NFTErrorWidget();
   String previewURL = "";
+  dynamic controller;
   BaseCacheManager? cacheManager;
 
   Widget build(BuildContext context) => const SizedBox();
@@ -204,7 +210,6 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
 }
 
 class AudioNFTRenderingWidget extends INFTRenderingWidget {
-
   String? _thumbnailURL;
   AudioPlayer? _player;
 
@@ -278,15 +283,15 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       children: [
         Flexible(
           child: CachedNetworkImage(
-                imageUrl: _thumbnailURL ?? "",
-                cacheManager: cacheManager,
-                placeholder: (context, url) => loadingWidget,
-                placeholderFadeInDuration: const Duration(milliseconds: 300),
-                errorWidget: (context, url, error) => Center(
-                  child: errorWidget,
-                ),
-                fit: BoxFit.contain,
-              ),
+            imageUrl: _thumbnailURL ?? "",
+            cacheManager: cacheManager,
+            placeholder: (context, url) => loadingWidget,
+            placeholderFadeInDuration: const Duration(milliseconds: 300),
+            errorWidget: (context, url, error) => Center(
+              child: errorWidget,
+            ),
+            fit: BoxFit.contain,
+          ),
         ),
         StreamBuilder<double>(
             stream: _progressStreamController.stream,
@@ -304,7 +309,6 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
 
 /// Video rendering widget type
 class VideoNFTRenderingWidget extends INFTRenderingWidget {
-
   String? _thumbnailURL;
 
   VideoNFTRenderingWidget({
@@ -523,7 +527,12 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   Widget _widgetBuilder() {
-    return SfPdfViewer.network(previewURL, key: Key(previewURL));
+    if (controller is PdfViewerController) {
+      return SfPdfViewer.network(previewURL,
+          key: Key(previewURL), controller: controller);
+    } else {
+      return SfPdfViewer.network(previewURL, key: Key(previewURL));
+    }
   }
 
   @override
