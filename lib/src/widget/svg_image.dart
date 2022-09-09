@@ -63,7 +63,7 @@ class _SvgImageState extends State<SvgImage> {
             maxSize: min(screenSize.width, screenSize.height) * 0.95,
           );
         }
-        await SvgParser().parse(svg);
+        await SvgParser().parse(svg, warningsAsErrors: true);
         _svgString.complete(svg);
       } catch (e) {
         if (svg != null) {
