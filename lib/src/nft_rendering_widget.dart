@@ -105,7 +105,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _widgetBuilder();
+    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
@@ -145,7 +145,7 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _widgetBuilder();
+    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
   @override
@@ -182,7 +182,7 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _widgetBuilder();
+    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
   @override
@@ -358,7 +358,9 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     return AnimatedBuilder(
       animation: _stateOfRenderingWidget,
       builder: (context, child) {
-        return _widgetBuilder();
+        return previewURL.isEmpty
+            ? const NoPreviewUrlWidget()
+            : _widgetBuilder();
       },
     );
   }
@@ -443,7 +445,9 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     return AnimatedBuilder(
       animation: _stateOfRenderingWidget,
       builder: (context, child) {
-        return _widgetBuilder();
+        return previewURL.isEmpty
+            ? const NoPreviewUrlWidget()
+            : _widgetBuilder();
       },
     );
   }
@@ -466,7 +470,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
               const javascriptString = '''
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
-                            meta.setAttribute('content', 'width=device-width');
                             document.getElementsByTagName('head')[0].appendChild(meta);
                             document.body.style.overflow = 'hidden';
                 ''';
@@ -523,7 +526,7 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _widgetBuilder();
+    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
@@ -545,4 +548,60 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   void dispose() {}
+}
+
+class NoPreviewUrlWidget extends StatelessWidget {
+  const NoPreviewUrlWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return Stack(
+      children: [
+        Center(
+          child: ClipPath(
+            clipper: RectangleClipper(),
+            child: Container(
+              padding: const EdgeInsets.all(15.0),
+              height: size.width,
+              width: size.width,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        Center(
+          child: ClipPath(
+            clipper: RectangleClipper(),
+            child: Container(
+              padding: const EdgeInsets.all(15.0),
+              height: size.width - 2,
+              width: size.width - 2,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class RectangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    double radius = 14;
+
+    Path path = Path()
+      ..lineTo(0, 0)
+      ..lineTo(size.width - radius, 0)
+      ..lineTo(size.width, radius)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..lineTo(0, 0)
+      ..close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
