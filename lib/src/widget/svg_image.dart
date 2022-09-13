@@ -18,6 +18,7 @@ class SvgImage extends StatefulWidget {
   final BaseCacheManager? cacheManager;
   final WidgetBuilder? loadingWidgetBuilder;
   final WidgetBuilder? errorWidgetBuilder;
+  final WidgetBuilder? unsupportWidgetBuilder;
   final VoidCallback? onLoaded;
   final VoidCallback? onError;
 
@@ -30,6 +31,7 @@ class SvgImage extends StatefulWidget {
     this.errorWidgetBuilder,
     this.onLoaded,
     this.onError,
+    this.unsupportWidgetBuilder,
   });
 
   @override
@@ -108,6 +110,10 @@ class _SvgImageState extends State<SvgImage> {
               },
             ),
           );
+        } else if (snapshot.error is SvgNotSupported &&
+            !widget.fallbackToWebView) {
+          return widget.unsupportWidgetBuilder?.call(context) ??
+              const SizedBox();
         } else if (snapshot.hasError || _webviewLoadFailed) {
           return widget.errorWidgetBuilder?.call(context) ?? const SizedBox();
         } else {
