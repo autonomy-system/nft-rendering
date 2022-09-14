@@ -439,7 +439,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   WebViewController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
-
+  late Key key;
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -457,27 +457,27 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       fit: StackFit.loose,
       children: [
         WebView(
-            key: Key(previewURL),
-            initialUrl: previewURL,
-            zoomEnabled: false,
-            initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-            onWebViewCreated: (WebViewController webViewController) {
-              _webViewController = webViewController;
-            },
-            onWebResourceError: (WebResourceError error) {},
-            onPageFinished: (some) async {
-              _stateOfRenderingWidget.previewLoaded();
-              const javascriptString = '''
+          key: Key(previewURL),
+          initialUrl: previewURL,
+          initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
+          onWebViewCreated: (WebViewController webViewController) {
+            _webViewController = webViewController;
+          },
+          onWebResourceError: (WebResourceError error) {},
+          onPageFinished: (some) async {
+            _stateOfRenderingWidget.previewLoaded();
+            const javascriptString = '''
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
                             document.getElementsByTagName('head')[0].appendChild(meta);
                             document.body.style.overflow = 'hidden';
                 ''';
-              await _webViewController?.runJavascript(javascriptString);
-            },
-            javascriptMode: JavascriptMode.unrestricted,
-            allowsInlineMediaPlayback: true,
-            backgroundColor: Colors.black),
+            await _webViewController?.runJavascript(javascriptString);
+          },
+          javascriptMode: JavascriptMode.unrestricted,
+          allowsInlineMediaPlayback: true,
+          backgroundColor: Colors.black,
+        ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
         ]
