@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -58,15 +57,17 @@ class _SvgImageState extends State<SvgImage> {
           final resp = await http.get(Uri.parse(widget.url));
           svg = resp.body;
         }
-        if (widget.fallbackToWebView && Platform.isIOS) {
-          final screenSize = MediaQuery.of(context).size;
-          svg = await _scaleSvgImage(
+        if (widget.fallbackToWebView) {
+          svg = await _fixSvgSize(
             svgData: svg,
-            maxSize: min(screenSize.width, screenSize.height) * 0.95,
           );
         }
-        await SvgParser().parse(svg, warningsAsErrors: true);
-        _svgString.complete(svg);
+        if (kDebugMode) {
+          await SvgParser().parse(svg, warningsAsErrors: true);
+          _svgString.complete(svg);
+        } else {
+          _svgString.completeError(SvgNotSupported(svg));
+        }
       } catch (e) {
         if (svg != null) {
           _svgString.completeError(SvgNotSupported(svg));
@@ -128,6 +129,18 @@ class SvgNotSupported {
   final String svgData;
 
   SvgNotSupported(this.svgData);
+}
+
+Future<String> _fixSvgSize({
+  required String svgData,
+}) async {
+  return compute<String, String>((svg) {
+    final doc = XmlDocument.parse(svg);
+    final root = doc.findElements("svg").first;
+    root.setAttribute("width", "100%");
+    root.setAttribute("height", "100%");
+    return doc.toXmlString();
+  }, svgData);
 }
 
 Future<String> _scaleSvgImage({

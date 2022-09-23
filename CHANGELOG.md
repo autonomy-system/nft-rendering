@@ -1,3 +1,6 @@
+## 1.0.10
+- Update SVG size to fit viewport.
+
 ## 1.0.9
 - Update dependencies. 
 
