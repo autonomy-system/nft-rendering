@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
@@ -453,6 +454,13 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   Widget _widgetBuilder() {
+    SystemChannels.keyEvent.setMessageHandler((message) async {
+      if (message is! Map) return;
+      final character = message['character'];
+      final type = message['type'];
+      _webViewController?.runJavascript(
+          'window.dispatchEvent(new KeyboardEvent(\'$type\', {\'key\': \'$character\'}));');
+    });
     return Stack(
       fit: StackFit.loose,
       children: [
