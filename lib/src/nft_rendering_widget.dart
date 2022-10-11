@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
@@ -34,9 +36,13 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
     case "application/pdf":
       return PDFNFTRenderingWidget();
     case "webview":
-      return WebviewNFTRenderingWidget();
+      return Platform.isMacOS
+          ? WebviewMacOSNFTRenderingWidget()
+          : WebviewNFTRenderingWidget();
     default:
-      return WebviewNFTRenderingWidget();
+      return Platform.isMacOS
+          ? WebviewMacOSNFTRenderingWidget()
+          : WebviewNFTRenderingWidget();
   }
 }
 
@@ -505,6 +511,98 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     _webViewController?.runJavascript(
         "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
     _webViewController = null;
+  }
+
+  @override
+  Future<bool> clearPrevious() async {
+    await _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+    return true;
+  }
+
+  updateWebviewSize() {
+    if (_webViewController != null) {
+      EasyDebounce.debounce(
+          'screen_rotate', // <-- An ID for this particular debouncer
+          const Duration(milliseconds: 100), // <-- The debounce duration
+          () => _webViewController?.runJavascript(
+              "window.dispatchEvent(new Event('resize'));") // <-- The target method
+          );
+    }
+  }
+}
+
+/// Webview rendering widget type for MacOS
+class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
+  WebviewMacOSNFTRenderingWidget({
+    RenderingWidgetBuilder? renderingWidgetBuilder,
+  }) : super(
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
+
+  InlineWebViewMacOsController? _webViewController;
+  final _stateOfRenderingWidget = StateOfRenderingWidget();
+  late Key key;
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _stateOfRenderingWidget,
+      builder: (context, child) {
+        return previewURL.isEmpty
+            ? const NoPreviewUrlWidget()
+            : _widgetBuilder(context);
+      },
+    );
+  }
+
+  Widget _widgetBuilder(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final heightRatio = size.height / 1080;
+    return Stack(
+      fit: StackFit.loose,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: heightRatio * 92),
+          child: InlineWebViewMacOs(
+            key: Key(previewURL),
+            initialUrlRequest: URLRequest(url: Uri.tryParse(previewURL)),
+            width: size.width,
+            height: size.height,
+            onWebViewCreated: (webViewController) {
+              _webViewController = webViewController;
+              _webViewController?.loadUrl(
+                  urlRequest: URLRequest(url: Uri.tryParse(previewURL)));
+            },
+            onLoadStop: (controller, url) async {
+              _stateOfRenderingWidget.previewLoaded();
+              const javascriptString = '''
+                  var meta = document.createElement('meta');
+                              meta.setAttribute('name', 'viewport');
+                              document.getElementsByTagName('head')[0].appendChild(meta);
+                              document.body.style.overflow = 'hidden';
+                  ''';
+              await _webViewController?.runJavascript(javascriptString);
+            },
+          ),
+        ),
+        if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
+          loadingWidget,
+        ]
+      ],
+    );
+  }
+
+  @override
+  void didPopNext() {
+    _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); }");
+  }
+
+  @override
+  void dispose() {
+    _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+    _webViewController?.dispose();
   }
 
   @override
