@@ -739,13 +739,48 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
     return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
+  final _loading = ValueNotifier(true);
+  final _loadError = ValueNotifier<PdfDocumentLoadFailedDetails?>(null);
+
   Widget _widgetBuilder() {
-    if (controller is PdfViewerController) {
-      return SfPdfViewer.network(previewURL,
-          key: Key(previewURL), controller: controller);
-    } else {
-      return SfPdfViewer.network(previewURL, key: Key(previewURL));
-    }
+    return Stack(children: [
+      SfPdfViewer.network(
+        previewURL,
+        key: Key(previewURL),
+        controller: controller is PdfViewerController ? controller : null,
+        onDocumentLoaded: (_) {
+          _loading.value = false;
+        },
+        onDocumentLoadFailed: (error) {
+          _loading.value = false;
+          _loadError.value = error;
+        },
+      ),
+      ValueListenableBuilder<PdfDocumentLoadFailedDetails?>(
+        valueListenable: _loadError,
+        builder: (context, error, child) {
+          return Visibility(
+            visible: error != null,
+            child: Container(
+              color: Colors.black,
+              child: errorWidget,
+            ),
+          );
+        },
+      ),
+      ValueListenableBuilder<bool>(
+        valueListenable: _loading,
+        builder: (context, loading, child) {
+          return Visibility(
+            visible: loading,
+            child: Container(
+              color: Colors.black,
+              child: loadingWidget,
+            ),
+          );
+        },
+      ),
+    ]);
   }
 
   @override
