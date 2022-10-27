@@ -419,6 +419,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
 /// Video rendering widget type
 class VideoNFTRenderingWidget extends INFTRenderingWidget {
   String? _thumbnailURL;
+  bool _playAfterInitialized = true;
 
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
@@ -430,8 +431,10 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
       _controller!.initialize().then((_) {
         _stateOfRenderingWidget.previewLoaded();
-        _controller?.play();
         _controller?.setLooping(true);
+        if (_playAfterInitialized) {
+          _controller?.play();
+        }
       });
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
@@ -454,8 +457,10 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
       _controller!.initialize().then((_) {
         _stateOfRenderingWidget.previewLoaded();
-        _controller?.play();
         _controller?.setLooping(true);
+        if (_playAfterInitialized) {
+          _controller?.play();
+        }
       });
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
@@ -505,6 +510,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   void didPopNext() {
+    _playAfterInitialized = true;
     _controller?.play();
   }
 
@@ -516,6 +522,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Future<bool> clearPrevious() async {
+    _playAfterInitialized = false;
     await _controller?.pause();
     return true;
   }
