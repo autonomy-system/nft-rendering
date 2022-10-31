@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -569,13 +570,21 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   Widget _widgetBuilder() {
-    SystemChannels.keyEvent.setMessageHandler((message) async {
-      if (message is! Map) return;
-      final character = message['character'];
-      final type = message['type'];
-      _webViewController?.runJavascript(
-          'window.dispatchEvent(new KeyboardEvent(\'$type\', {\'key\': \'$character\',\'keyCode\': ${keysCode[character]}}));');
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    deviceInfo.androidInfo.then((value) {
+      bool isTV =
+          value.systemFeatures.contains('android.software.leanback_only');
+      if (!isTV) {
+        SystemChannels.keyEvent.setMessageHandler((message) async {
+          if (message is! Map) return;
+          final character = message['character'];
+          final type = message['type'];
+          _webViewController?.runJavascript(
+              'window.dispatchEvent(new KeyboardEvent(\'$type\', {\'key\': \'$character\',\'keyCode\': ${keysCode[character]}}));');
+        });
+      }
     });
+
     return Stack(
       fit: StackFit.loose,
       children: [
