@@ -157,6 +157,7 @@ class RenderingWidgetBuilder {
   late String? previewURL;
   late BaseCacheManager? cacheManager;
   late dynamic controller;
+  Function({int? time})? onLoaded;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -165,6 +166,7 @@ class RenderingWidgetBuilder {
     this.previewURL,
     this.cacheManager,
     this.controller,
+    this.onLoaded,
   });
 }
 
@@ -178,6 +180,7 @@ abstract class INFTRenderingWidget {
           renderingWidgetBuilder.errorWidget ?? const NFTErrorWidget();
       previewURL = renderingWidgetBuilder.previewURL ?? "";
       controller = renderingWidgetBuilder.controller;
+      onLoaded = renderingWidgetBuilder.onLoaded;
     }
   }
 
@@ -188,8 +191,10 @@ abstract class INFTRenderingWidget {
     previewURL = renderingWidgetBuilder.previewURL ?? "";
     cacheManager = renderingWidgetBuilder.cacheManager;
     controller = renderingWidgetBuilder.controller;
+    onLoaded = renderingWidgetBuilder.onLoaded;
   }
 
+  Function({int? time})? onLoaded;
   Widget loadingWidget = const NFTLoadingWidget();
   Widget errorWidget = const NFTErrorWidget();
   String previewURL = "";
@@ -215,6 +220,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
+    onLoaded?.call();
     return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
@@ -276,7 +282,7 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
         url: previewURL,
         fallbackToWebView: true,
         loadingWidgetBuilder: (context) => loadingWidget,
-        onLoaded: () {},
+        onLoaded: () => onLoaded?.call(),
         onError: () {},
       ),
     );
@@ -292,6 +298,7 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
+    onLoaded?.call();
     return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
@@ -358,6 +365,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       });
       await _player?.setLoopMode(LoopMode.all);
       await _player?.setAudioSource(AudioSource.uri(Uri.parse(audioURL)));
+      onLoaded?.call(time: _player?.duration?.inSeconds);
       await _player?.play();
     } catch (e) {
       if (kDebugMode) {
@@ -431,6 +439,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       _controller = VideoPlayerController.network(previewURL);
 
       _controller!.initialize().then((_) {
+        onLoaded?.call(time: _controller?.value.duration.inSeconds);
         _stateOfRenderingWidget.previewLoaded();
         _controller?.setLooping(true);
         if (_playAfterInitialized) {
@@ -457,6 +466,8 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       _controller = VideoPlayerController.network(previewURL);
 
       _controller!.initialize().then((_) {
+        final time = _controller?.value.duration.inSeconds;
+        onLoaded?.call(time: time);
         _stateOfRenderingWidget.previewLoaded();
         _controller?.setLooping(true);
         if (_playAfterInitialized) {
@@ -598,6 +609,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           onWebResourceError: (WebResourceError error) {},
           onPageFinished: (some) async {
             _stateOfRenderingWidget.previewLoaded();
+            onLoaded?.call();
             const javascriptString = '''
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
@@ -693,6 +705,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
             },
             onLoadStop: (controller, url) async {
               _stateOfRenderingWidget.previewLoaded();
+              onLoaded?.call();
               const javascriptString = '''
                   var meta = document.createElement('meta');
                               meta.setAttribute('name', 'viewport');
@@ -765,9 +778,11 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
         key: Key(previewURL),
         controller: controller is PdfViewerController ? controller : null,
         onDocumentLoaded: (_) {
+          onLoaded?.call();
           _loading.value = false;
         },
         onDocumentLoadFailed: (error) {
+          onLoaded?.call();
           _loading.value = false;
           _loadError.value = error;
         },
