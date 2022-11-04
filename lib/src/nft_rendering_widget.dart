@@ -157,7 +157,9 @@ class RenderingWidgetBuilder {
   late String? previewURL;
   late BaseCacheManager? cacheManager;
   late dynamic controller;
+  final int? latestPosition;
   Function({int? time})? onLoaded;
+  Function({int? time})? onDispose;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -167,6 +169,8 @@ class RenderingWidgetBuilder {
     this.cacheManager,
     this.controller,
     this.onLoaded,
+    this.onDispose,
+    this.latestPosition,
   });
 }
 
@@ -181,6 +185,8 @@ abstract class INFTRenderingWidget {
       previewURL = renderingWidgetBuilder.previewURL ?? "";
       controller = renderingWidgetBuilder.controller;
       onLoaded = renderingWidgetBuilder.onLoaded;
+      onDispose = renderingWidgetBuilder.onDispose;
+      latestPosition = renderingWidgetBuilder.latestPosition;
     }
   }
 
@@ -192,14 +198,18 @@ abstract class INFTRenderingWidget {
     cacheManager = renderingWidgetBuilder.cacheManager;
     controller = renderingWidgetBuilder.controller;
     onLoaded = renderingWidgetBuilder.onLoaded;
+    onDispose = renderingWidgetBuilder.onDispose;
+    latestPosition = renderingWidgetBuilder.latestPosition;
   }
 
   Function({int? time})? onLoaded;
+  Function({int? time})? onDispose;
   Widget loadingWidget = const NFTLoadingWidget();
   Widget errorWidget = const NFTErrorWidget();
   String previewURL = "";
   dynamic controller;
   BaseCacheManager? cacheManager;
+  int? latestPosition;
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -220,22 +230,27 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    onLoaded?.call();
     return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
     return CachedNetworkImage(
       imageUrl: previewURL,
-      imageBuilder: (context, imageProvider) => PhotoView(
-        imageProvider: imageProvider,
-      ),
+      imageBuilder: (context, imageProvider) {
+        onLoaded?.call();
+        return PhotoView(
+          imageProvider: imageProvider,
+        );
+      },
       cacheManager: cacheManager,
       placeholder: (context, url) => loadingWidget,
       placeholderFadeInDuration: const Duration(milliseconds: 300),
-      errorWidget: (context, url, error) => Center(
-        child: errorWidget,
-      ),
+      errorWidget: (context, url, error) {
+        onLoaded?.call();
+        return Center(
+          child: errorWidget,
+        );
+      },
       fit: BoxFit.cover,
     );
   }
@@ -438,9 +453,17 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     runZonedGuarded(() {
       _controller = VideoPlayerController.network(previewURL);
 
-      _controller!.initialize().then((_) {
-        onLoaded?.call(time: _controller?.value.duration.inSeconds);
+      _controller!.initialize().then((_) async {
         _stateOfRenderingWidget.previewLoaded();
+        final durationVideo = _controller?.value.duration.inSeconds ?? 0;
+        Duration position;
+        if (latestPosition == null || latestPosition! >= durationVideo) {
+          position = const Duration(seconds: 0);
+        } else {
+          position = Duration(seconds: latestPosition!);
+        }
+        await _controller?.seekTo(position);
+        onLoaded?.call(time: durationVideo);
         _controller?.setLooping(true);
         if (_playAfterInitialized) {
           _controller?.play();
@@ -465,8 +488,16 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       }
       _controller = VideoPlayerController.network(previewURL);
 
-      _controller!.initialize().then((_) {
+      _controller!.initialize().then((_) async {
         final time = _controller?.value.duration.inSeconds;
+        Duration position;
+        if (latestPosition == null ||
+            latestPosition! >= _controller!.value.duration.inSeconds) {
+          position = const Duration(seconds: 0);
+        } else {
+          position = Duration(seconds: latestPosition!);
+        }
+        await _controller?.seekTo(position);
         onLoaded?.call(time: time);
         _stateOfRenderingWidget.previewLoaded();
         _controller?.setLooping(true);
@@ -527,7 +558,9 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
+    final position = await _controller?.position;
+    onDispose?.call(time: position?.inSeconds ?? 0);
     _controller?.dispose();
     _controller = null;
   }
