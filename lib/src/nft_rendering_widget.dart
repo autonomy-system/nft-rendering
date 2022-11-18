@@ -158,6 +158,7 @@ class RenderingWidgetBuilder {
   late BaseCacheManager? cacheManager;
   late dynamic controller;
   final int? latestPosition;
+  final bool isMute;
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
 
@@ -171,6 +172,7 @@ class RenderingWidgetBuilder {
     this.onLoaded,
     this.onDispose,
     this.latestPosition,
+    this.isMute = false,
   });
 }
 
@@ -187,6 +189,7 @@ abstract class INFTRenderingWidget {
       onLoaded = renderingWidgetBuilder.onLoaded;
       onDispose = renderingWidgetBuilder.onDispose;
       latestPosition = renderingWidgetBuilder.latestPosition;
+      isMute = renderingWidgetBuilder.isMute;
     }
   }
 
@@ -200,6 +203,7 @@ abstract class INFTRenderingWidget {
     onLoaded = renderingWidgetBuilder.onLoaded;
     onDispose = renderingWidgetBuilder.onDispose;
     latestPosition = renderingWidgetBuilder.latestPosition;
+    isMute = renderingWidgetBuilder.isMute;
   }
 
   Function({int? time})? onLoaded;
@@ -210,6 +214,7 @@ abstract class INFTRenderingWidget {
   dynamic controller;
   BaseCacheManager? cacheManager;
   int? latestPosition;
+  bool isMute = false;
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -238,8 +243,8 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
       imageUrl: previewURL,
       imageBuilder: (context, imageProvider) {
         onLoaded?.call();
-        return PhotoView(
-          imageProvider: imageProvider,
+        return Image(
+          image: imageProvider,
         );
       },
       cacheManager: cacheManager,
@@ -251,7 +256,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
           child: errorWidget,
         );
       },
-      fit: BoxFit.cover,
+      // fit: BoxFit.cover,
     );
   }
 
@@ -380,6 +385,9 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       });
       await _player?.setLoopMode(LoopMode.all);
       await _player?.setAudioSource(AudioSource.uri(Uri.parse(audioURL)));
+      if (isMute) {
+        _player?.setVolume(0);
+      }
       onLoaded?.call(time: _player?.duration?.inSeconds);
       await _player?.play();
     } catch (e) {
@@ -463,6 +471,9 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           position = Duration(seconds: latestPosition!);
         }
         await _controller?.seekTo(position);
+        if (isMute) {
+          _controller?.setVolume(0);
+        }
         onLoaded?.call(time: durationVideo);
         _controller?.setLooping(true);
         if (_playAfterInitialized) {
@@ -498,6 +509,9 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           position = Duration(seconds: latestPosition!);
         }
         await _controller?.seekTo(position);
+        if (isMute) {
+          _controller?.setVolume(0);
+        }
         onLoaded?.call(time: time);
         _stateOfRenderingWidget.previewLoaded();
         _controller?.setLooping(true);
@@ -650,6 +664,10 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                             document.body.style.overflow = 'hidden';
                 ''';
             await _webViewController?.runJavascript(javascriptString);
+            if (isMute) {
+              _webViewController?.runJavascript(
+                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; }");
+            }
           },
           javascriptMode: JavascriptMode.unrestricted,
           allowsInlineMediaPlayback: true,
