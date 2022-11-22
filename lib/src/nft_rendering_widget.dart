@@ -629,19 +629,21 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   Widget _widgetBuilder() {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    deviceInfo.androidInfo.then((value) {
-      bool isTV =
-          value.systemFeatures.contains('android.software.leanback_only');
-      if (!isTV) {
-        SystemChannels.keyEvent.setMessageHandler((message) async {
-          if (message is! Map) return;
-          final character = message['character'];
-          final type = message['type'];
-          _webViewController?.runJavascript(
-              'window.dispatchEvent(new KeyboardEvent(\'$type\', {\'key\': \'$character\',\'keyCode\': ${keysCode[character]}}));');
-        });
-      }
-    });
+    if (Platform.isAndroid) {
+      deviceInfo.androidInfo.then((value) {
+        bool isTV =
+            value.systemFeatures.contains('android.software.leanback_only');
+        if (!isTV) {
+          SystemChannels.keyEvent.setMessageHandler((message) async {
+            if (message is! Map) return;
+            final character = message['character'];
+            final type = message['type'];
+            _webViewController?.runJavascript(
+                'window.dispatchEvent(new KeyboardEvent(\'$type\', {\'key\': \'$character\',\'keyCode\': ${keysCode[character]}}));');
+          });
+        }
+      });
+    }
 
     return Stack(
       fit: StackFit.loose,
