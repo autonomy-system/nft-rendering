@@ -124,21 +124,31 @@ const keysCode = {
   "singlequote": 222
 };
 
+class RenderingType {
+  static const image = 'image';
+  static const svg = 'svg';
+  static const gif = 'gif';
+  static const audio = 'audio';
+  static const video = 'video';
+  static const pdf = 'application/pdf';
+  static const webview = 'webview';
+}
+
 INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
   switch (type) {
-    case "image":
+    case RenderingType.image:
       return ImageNFTRenderingWidget();
-    case "svg":
+    case RenderingType.svg:
       return SVGNFTRenderingWidget();
-    case 'gif':
+    case RenderingType.gif:
       return GifNFTRenderingWidget();
-    case "audio":
+    case RenderingType.audio:
       return AudioNFTRenderingWidget();
-    case "video":
+    case RenderingType.video:
       return VideoNFTRenderingWidget();
-    case "application/pdf":
+    case RenderingType.pdf:
       return PDFNFTRenderingWidget();
-    case "webview":
+    case RenderingType.webview:
       return Platform.isMacOS
           ? WebviewMacOSNFTRenderingWidget()
           : WebviewNFTRenderingWidget();
