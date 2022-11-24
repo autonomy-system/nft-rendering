@@ -168,6 +168,7 @@ class RenderingWidgetBuilder {
   late BaseCacheManager? cacheManager;
   late dynamic controller;
   final int? latestPosition;
+  final String? overriddenHtml;
   final bool isMute;
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
@@ -182,6 +183,7 @@ class RenderingWidgetBuilder {
     this.onLoaded,
     this.onDispose,
     this.latestPosition,
+    this.overriddenHtml,
     this.isMute = false,
   });
 }
@@ -199,6 +201,7 @@ abstract class INFTRenderingWidget {
       onLoaded = renderingWidgetBuilder.onLoaded;
       onDispose = renderingWidgetBuilder.onDispose;
       latestPosition = renderingWidgetBuilder.latestPosition;
+      overriddenHtml = renderingWidgetBuilder.overriddenHtml;
       isMute = renderingWidgetBuilder.isMute;
     }
   }
@@ -213,6 +216,7 @@ abstract class INFTRenderingWidget {
     onLoaded = renderingWidgetBuilder.onLoaded;
     onDispose = renderingWidgetBuilder.onDispose;
     latestPosition = renderingWidgetBuilder.latestPosition;
+    overriddenHtml = renderingWidgetBuilder.overriddenHtml;
     isMute = renderingWidgetBuilder.isMute;
   }
 
@@ -224,6 +228,7 @@ abstract class INFTRenderingWidget {
   dynamic controller;
   BaseCacheManager? cacheManager;
   int? latestPosition;
+  String? overriddenHtml;
   bool isMute = false;
 
   Widget build(BuildContext context) => const SizedBox();
@@ -240,8 +245,8 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
   ImageNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        );
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -286,8 +291,8 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
   SVGNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        );
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -323,8 +328,8 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   GifNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        );
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -466,8 +471,8 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        ) {
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  ) {
     runZonedGuarded(() {
       _controller = VideoPlayerController.network(previewURL);
 
@@ -619,8 +624,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   WebviewNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        );
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  );
 
   WebViewController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -642,7 +647,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     if (Platform.isAndroid) {
       deviceInfo.androidInfo.then((value) {
         bool isTV =
-            value.systemFeatures.contains('android.software.leanback_only');
+        value.systemFeatures.contains('android.software.leanback_only');
         if (!isTV) {
           SystemChannels.keyEvent.setMessageHandler((message) async {
             if (message is! Map) return;
@@ -660,10 +665,13 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       children: [
         WebView(
           key: Key(previewURL),
-          initialUrl: previewURL,
+          initialUrl: overriddenHtml != null ? 'about:blank' : previewURL,
           initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
           onWebViewCreated: (WebViewController webViewController) {
             _webViewController = webViewController;
+            if (overriddenHtml != null) {
+              _webViewController?.loadHtmlString(overriddenHtml!);
+            }
           },
           onWebResourceError: (WebResourceError error) {},
           onPageFinished: (some) async {
@@ -690,7 +698,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         ]
       ],
     );
-    ;
   }
 
   @override
@@ -718,9 +725,9 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-          () => _webViewController?.runJavascript(
+              () => _webViewController?.runJavascript(
               "window.dispatchEvent(new Event('resize'));") // <-- The target method
-          );
+      );
     }
   }
 }
@@ -730,8 +737,8 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   WebviewMacOSNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        );
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  );
 
   InlineWebViewMacOsController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -811,9 +818,9 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-          () => _webViewController?.runJavascript(
+              () => _webViewController?.runJavascript(
               "window.dispatchEvent(new Event('resize'));") // <-- The target method
-          );
+      );
     }
   }
 }
@@ -823,8 +830,8 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   PDFNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-          renderingWidgetBuilder: renderingWidgetBuilder,
-        );
+    renderingWidgetBuilder: renderingWidgetBuilder,
+  );
 
   @override
   Widget build(BuildContext context) {
