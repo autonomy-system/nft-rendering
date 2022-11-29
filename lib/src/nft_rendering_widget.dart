@@ -170,6 +170,7 @@ class RenderingWidgetBuilder {
   final int? latestPosition;
   final String? overriddenHtml;
   final bool isMute;
+  final bool skipViewport;
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
 
@@ -185,6 +186,7 @@ class RenderingWidgetBuilder {
     this.latestPosition,
     this.overriddenHtml,
     this.isMute = false,
+    this.skipViewport = false,
   });
 }
 
@@ -203,6 +205,7 @@ abstract class INFTRenderingWidget {
       latestPosition = renderingWidgetBuilder.latestPosition;
       overriddenHtml = renderingWidgetBuilder.overriddenHtml;
       isMute = renderingWidgetBuilder.isMute;
+      skipViewport = renderingWidgetBuilder.skipViewport;
     }
   }
 
@@ -218,6 +221,7 @@ abstract class INFTRenderingWidget {
     latestPosition = renderingWidgetBuilder.latestPosition;
     overriddenHtml = renderingWidgetBuilder.overriddenHtml;
     isMute = renderingWidgetBuilder.isMute;
+    skipViewport = renderingWidgetBuilder.skipViewport;
   }
 
   Function({int? time})? onLoaded;
@@ -230,6 +234,7 @@ abstract class INFTRenderingWidget {
   int? latestPosition;
   String? overriddenHtml;
   bool isMute = false;
+  bool skipViewport = false;
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -245,8 +250,8 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
   ImageNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -291,8 +296,8 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
   SVGNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -328,8 +333,8 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   GifNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -471,8 +476,8 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  ) {
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        ) {
     runZonedGuarded(() {
       _controller = VideoPlayerController.network(previewURL);
 
@@ -624,8 +629,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   WebviewNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   WebViewController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -647,7 +652,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     if (Platform.isAndroid) {
       deviceInfo.androidInfo.then((value) {
         bool isTV =
-        value.systemFeatures.contains('android.software.leanback_only');
+            value.systemFeatures.contains('android.software.leanback_only');
         if (!isTV) {
           SystemChannels.keyEvent.setMessageHandler((message) async {
             if (message is! Map) return;
@@ -681,9 +686,14 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
                             document.getElementsByTagName('head')[0].appendChild(meta);
-                            document.body.style.overflow = 'hidden';
                 ''';
             await _webViewController?.runJavascript(javascriptString);
+
+            if (!skipViewport) {
+              await _webViewController?.runJavascript(
+                  '''document.body.style.overflow = 'hidden';''');
+            }
+
             if (isMute) {
               _webViewController?.runJavascript(
                   "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; }");
@@ -725,9 +735,9 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-              () => _webViewController?.runJavascript(
+          () => _webViewController?.runJavascript(
               "window.dispatchEvent(new Event('resize'));") // <-- The target method
-      );
+          );
     }
   }
 }
@@ -737,8 +747,8 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   WebviewMacOSNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   InlineWebViewMacOsController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -818,9 +828,9 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-              () => _webViewController?.runJavascript(
+          () => _webViewController?.runJavascript(
               "window.dispatchEvent(new Event('resize'));") // <-- The target method
-      );
+          );
     }
   }
 }
@@ -830,8 +840,8 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   PDFNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
