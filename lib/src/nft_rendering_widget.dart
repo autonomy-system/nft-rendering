@@ -173,6 +173,7 @@ class RenderingWidgetBuilder {
   final bool skipViewport;
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
+  FocusNode? focusNode;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -186,6 +187,7 @@ class RenderingWidgetBuilder {
     this.latestPosition,
     this.overriddenHtml,
     this.isMute = false,
+    this.focusNode,
     this.skipViewport = false,
   });
 }
@@ -206,6 +208,7 @@ abstract class INFTRenderingWidget {
       overriddenHtml = renderingWidgetBuilder.overriddenHtml;
       isMute = renderingWidgetBuilder.isMute;
       skipViewport = renderingWidgetBuilder.skipViewport;
+      focusNode = renderingWidgetBuilder.focusNode;
     }
   }
 
@@ -222,10 +225,12 @@ abstract class INFTRenderingWidget {
     overriddenHtml = renderingWidgetBuilder.overriddenHtml;
     isMute = renderingWidgetBuilder.isMute;
     skipViewport = renderingWidgetBuilder.skipViewport;
+    focusNode = renderingWidgetBuilder.focusNode;
   }
 
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
+  FocusNode? focusNode;
   Widget loadingWidget = const NFTLoadingWidget();
   Widget errorWidget = const NFTErrorWidget();
   String previewURL = "";
@@ -647,27 +652,24 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     );
   }
 
-  Widget _widgetBuilder() {
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    if (Platform.isAndroid) {
-      deviceInfo.androidInfo.then((value) {
-        bool isTV =
-            value.systemFeatures.contains('android.software.leanback_only');
-        if (!isTV) {
-          SystemChannels.keyEvent.setMessageHandler((message) async {
-            if (message is! Map) return;
-            final character = message['character'];
-            final type = message['type'];
-            _webViewController?.runJavascript(
-                'window.dispatchEvent(new KeyboardEvent(\'$type\', {\'key\': \'$character\',\'keyCode\': ${keysCode[character]}}));');
-          });
-        }
-      });
-    }
+  final _controller = TextEditingController();
 
+  Widget _widgetBuilder() {
     return Stack(
       fit: StackFit.loose,
       children: [
+        Visibility(
+          visible: focusNode != null,
+          child: TextFormField(
+            controller: _controller,
+            focusNode: focusNode,
+            onChanged: (value) {
+              _webViewController?.runJavascript(
+                  'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]}}));');
+              _controller.text = '';
+            },
+          ),
+        ),
         WebView(
           key: Key(previewURL),
           initialUrl: overriddenHtml != null ? 'about:blank' : previewURL,
@@ -705,7 +707,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
-        ]
+        ],
       ],
     );
   }
