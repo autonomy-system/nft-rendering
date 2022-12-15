@@ -665,7 +665,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             focusNode: focusNode,
             onChanged: (value) {
               _webViewController?.runJavascript(
-                  'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]}}));');
+                  'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
               _controller.text = '';
             },
           ),
