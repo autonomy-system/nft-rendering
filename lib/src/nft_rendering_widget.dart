@@ -3,14 +3,13 @@ import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
@@ -132,6 +131,7 @@ class RenderingType {
   static const video = 'video';
   static const pdf = 'application/pdf';
   static const webview = 'webview';
+  static const modelViewer = 'modelViewer';
 }
 
 INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
@@ -148,6 +148,8 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
       return VideoNFTRenderingWidget();
     case RenderingType.pdf:
       return PDFNFTRenderingWidget();
+    case RenderingType.modelViewer:
+      return ModelViewerRenderingWidget();
     case RenderingType.webview:
       return Platform.isMacOS
           ? WebviewMacOSNFTRenderingWidget()
@@ -894,6 +896,44 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
         },
       ),
     ]);
+  }
+
+  @override
+  Future<bool> clearPrevious() {
+    return Future.value(true);
+  }
+
+  @override
+  void didPopNext() {}
+
+  @override
+  void dispose() {}
+}
+
+/// Model viewer widget type
+class ModelViewerRenderingWidget extends INFTRenderingWidget {
+  ModelViewerRenderingWidget({
+    RenderingWidgetBuilder? renderingWidgetBuilder,
+  }) : super(
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
+  }
+
+  Widget _widgetBuilder() {
+    return Stack(
+      children: [
+        ModelViewer(
+          key: Key(previewURL),
+          src: previewURL,
+          ar: true,
+          autoRotate: true,
+        ),
+      ],
+    );
   }
 
   @override
