@@ -13,7 +13,6 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
-import 'package:photo_view/photo_view.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -568,8 +567,8 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
         return CachedNetworkImage(
           imageUrl: _thumbnailURL!,
-          imageBuilder: (context, imageProvider) => PhotoView(
-            imageProvider: imageProvider,
+          imageBuilder: (context, imageProvider) => Image(
+            image: imageProvider,
           ),
           cacheManager: cacheManager,
           placeholder: (context, url) => loadingWidget,
