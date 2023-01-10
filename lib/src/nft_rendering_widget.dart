@@ -639,8 +639,16 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         );
 
   WebViewController? _webViewController;
+  TextEditingController? _textController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
   late Key key;
+
+  @override
+  void setRenderWidgetBuilder(RenderingWidgetBuilder renderingWidgetBuilder) {
+    super.setRenderWidgetBuilder(renderingWidgetBuilder);
+    _textController = TextEditingController();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -653,8 +661,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     );
   }
 
-  final _controller = TextEditingController();
-
   Widget _widgetBuilder() {
     return Stack(
       fit: StackFit.loose,
@@ -662,12 +668,12 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         Visibility(
           visible: focusNode != null,
           child: TextFormField(
-            controller: _controller,
+            controller: _textController,
             focusNode: focusNode,
             onChanged: (value) {
               _webViewController?.runJavascript(
                   'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
-              _controller.text = '';
+              _textController?.text = '';
             },
           ),
         ),
@@ -723,6 +729,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   void dispose() {
     _webViewController?.runJavascript(
         "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+    _textController?.dispose();
     _webViewController = null;
   }
 
@@ -756,6 +763,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   InlineWebViewMacOsController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
   late Key key;
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
