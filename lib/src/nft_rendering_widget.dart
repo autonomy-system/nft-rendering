@@ -148,7 +148,9 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
     case RenderingType.pdf:
       return PDFNFTRenderingWidget();
     case RenderingType.modelViewer:
-      return ModelViewerRenderingWidget();
+      return Platform.isMacOS
+          ? WebviewMacOSNFTRenderingWidget()
+          : ModelViewerRenderingWidget();
     case RenderingType.webview:
       return Platform.isMacOS
           ? WebviewMacOSNFTRenderingWidget()
@@ -789,12 +791,10 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
             initialUrlRequest: URLRequest(url: Uri.tryParse(previewURL)),
             width: size.width,
             height: size.height,
-            onWebViewCreated: (webViewController) {
+            onWebViewCreated: (webViewController) async {
               _webViewController = webViewController;
-              _webViewController?.loadUrl(
+              await _webViewController?.loadUrl(
                   urlRequest: URLRequest(url: Uri.tryParse(previewURL)));
-            },
-            onLoadStop: (controller, url) async {
               _stateOfRenderingWidget.previewLoaded();
               onLoaded?.call();
               const javascriptString = '''
@@ -804,6 +804,13 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
                               document.body.style.overflow = 'hidden';
                   ''';
               await _webViewController?.runJavascript(javascriptString);
+              _webViewController
+                  ?.runJavascript("window.dispatchEvent(new Event('resize'));");
+            },
+            onLoadStop: (controller, url) async {},
+            onDispose: () {
+              _webViewController?.runJavascript(
+                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
             },
           ),
         ),
@@ -821,11 +828,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   @override
-  void dispose() {
-    _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
-    _webViewController?.dispose();
-  }
+  void dispose() {}
 
   @override
   Future<bool> clearPrevious() async {

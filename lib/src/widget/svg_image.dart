@@ -88,8 +88,10 @@ class _SvgImageState extends State<SvgImage> {
           return SvgPicture.string(snapshot.data ?? "");
         } else if (snapshot.error is SvgNotSupported &&
             widget.fallbackToWebView &&
-            !_webviewLoadFailed) {
+            !_webviewLoadFailed &&
+            !Platform.isMacOS) {
           final svgData = (snapshot.error as SvgNotSupported).svgData;
+
           return AspectRatio(
             aspectRatio: 1,
             child: WebView(
@@ -111,15 +113,15 @@ class _SvgImageState extends State<SvgImage> {
               },
             ),
           );
-        } else if (snapshot.error is SvgNotSupported &&
-            !widget.fallbackToWebView) {
+        }
+        if (snapshot.error is SvgNotSupported && !widget.fallbackToWebView) {
           return widget.unsupportWidgetBuilder?.call(context) ??
               const SizedBox();
-        } else if (snapshot.hasError || _webviewLoadFailed) {
-          return widget.errorWidgetBuilder?.call(context) ?? const SizedBox();
-        } else {
-          return widget.loadingWidgetBuilder?.call(context) ?? const SizedBox();
         }
+        if (snapshot.hasError || _webviewLoadFailed) {
+          return widget.errorWidgetBuilder?.call(context) ?? const SizedBox();
+        }
+        return widget.loadingWidgetBuilder?.call(context) ?? const SizedBox();
       },
     );
   }
