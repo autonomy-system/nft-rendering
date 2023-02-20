@@ -707,7 +707,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
             if (isMute) {
               _webViewController?.runJavascript(
-                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; }");
+                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
             }
           },
           javascriptMode: JavascriptMode.unrestricted,
@@ -724,13 +724,13 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   @override
   void didPopNext() {
     _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); }");
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
   }
 
   @override
   void dispose() {
     _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     _textController?.dispose();
     _webViewController = null;
   }
@@ -738,7 +738,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   @override
   Future<bool> clearPrevious() async {
     await _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     return true;
   }
 
