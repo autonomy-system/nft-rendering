@@ -278,6 +278,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
       cacheManager: cacheManager,
       placeholder: (context, url) => loadingWidget,
       placeholderFadeInDuration: const Duration(milliseconds: 300),
+      fadeOutDuration: const Duration(milliseconds: 0),
       errorWidget: (context, url, error) {
         onLoaded?.call();
         return Center(
@@ -366,6 +367,7 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
       imageUrl: previewURL,
       placeholder: (context, url) => loadingWidget,
       placeholderFadeInDuration: const Duration(milliseconds: 300),
+      fadeOutDuration: const Duration(milliseconds: 0),
       errorWidget: (context, url, error) => Center(
         child: errorWidget,
       ),
@@ -456,6 +458,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
             cacheManager: cacheManager,
             placeholder: (context, url) => loadingWidget,
             placeholderFadeInDuration: const Duration(milliseconds: 300),
+            fadeOutDuration: const Duration(milliseconds: 0),
             errorWidget: (context, url, error) => Center(
               child: errorWidget,
             ),
@@ -575,6 +578,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           cacheManager: cacheManager,
           placeholder: (context, url) => loadingWidget,
           placeholderFadeInDuration: const Duration(milliseconds: 300),
+          fadeOutDuration: const Duration(milliseconds: 0),
           errorWidget: (context, url, error) => Center(
             child: errorWidget,
           ),
