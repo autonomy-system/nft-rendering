@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
@@ -614,7 +615,17 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
                       backgroundColor: Colors.transparent,
                     );
                   }),
-            )
+            ),
+            Visibility(
+              visible: isMute,
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: SvgPicture.asset("assets/images/Mute_Circle.svg"),
+                ),
+              ),
+            ),
           ],
         );
       } else {
