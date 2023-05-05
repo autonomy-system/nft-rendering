@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
@@ -470,8 +471,8 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
             builder: (context, snapshot) {
               return LinearProgressIndicator(
                 value: snapshot.data ?? 0,
-                color: Colors.white,
-                backgroundColor: Colors.black,
+                color: const Color.fromRGBO(0, 255, 163, 1),
+                backgroundColor: Colors.transparent,
               );
             }),
       ],
@@ -483,6 +484,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
 class VideoNFTRenderingWidget extends INFTRenderingWidget {
   String? _thumbnailURL;
   bool _playAfterInitialized = true;
+  ValueNotifier<Duration> positionListener = ValueNotifier(const Duration());
 
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
@@ -510,6 +512,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         if (_playAfterInitialized) {
           _controller?.play();
         }
+        _controller?.addListener(_controlerListener);
       });
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
@@ -549,10 +552,18 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         if (_playAfterInitialized) {
           _controller?.play();
         }
+        _controller?.addListener(_controlerListener);
       });
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
     });
+  }
+
+  void _controlerListener() {
+    final positon = _controller?.value.position;
+    if (positon != null) {
+      positionListener.value = positon;
+    }
   }
 
   @override
@@ -585,9 +596,37 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           fit: BoxFit.cover,
         );
       } else if (_stateOfRenderingWidget.isPreviewLoaded) {
-        return AspectRatio(
-          aspectRatio: _controller!.value.aspectRatio,
-          child: VideoPlayer(_controller!),
+        return Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: _controller!.value.aspectRatio,
+              child: VideoPlayer(_controller!),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: ValueListenableBuilder<Duration>(
+                  valueListenable: positionListener,
+                  builder: (context, value, child) {
+                    return LinearProgressIndicator(
+                      value: value.inMilliseconds /
+                          _controller!.value.duration.inMilliseconds,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color.fromRGBO(0, 255, 163, 1)),
+                      backgroundColor: Colors.transparent,
+                    );
+                  }),
+            ),
+            Visibility(
+              visible: isMute,
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: SvgPicture.asset("assets/images/Mute_Circle.svg"),
+                ),
+              ),
+            ),
+          ],
         );
       } else {
         return loadingWidget;
