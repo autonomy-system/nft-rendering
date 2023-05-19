@@ -175,7 +175,7 @@ class RenderingWidgetBuilder {
   final String? overriddenHtml;
   final bool isMute;
   final bool skipViewport;
-  Function({int? time})? onLoaded;
+  Function({int? time, WebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
 
@@ -232,7 +232,7 @@ abstract class INFTRenderingWidget {
     focusNode = renderingWidgetBuilder.focusNode;
   }
 
-  Function({int? time})? onLoaded;
+  Function({int? time, WebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
   Widget loadingWidget = const NFTLoadingWidget();
@@ -735,7 +735,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           onWebResourceError: (WebResourceError error) {},
           onPageFinished: (some) async {
             _stateOfRenderingWidget.previewLoaded();
-            onLoaded?.call();
+            onLoaded?.call(webViewController: _webViewController);
             const javascriptString = '''
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
