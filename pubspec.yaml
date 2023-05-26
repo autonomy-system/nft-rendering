@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_svg: ^1.1.5
+  flutter_svg: ^2.0.6
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.0
   http: ^0.13.5
