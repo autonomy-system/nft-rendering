@@ -167,6 +167,7 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
 class RenderingWidgetBuilder {
   late Widget? loadingWidget;
   late Widget? errorWidget;
+  late Widget? noPreviewUrlWidget;
   final String? thumbnailURL;
   late String? previewURL;
   late BaseCacheManager? cacheManager;
@@ -182,6 +183,7 @@ class RenderingWidgetBuilder {
   RenderingWidgetBuilder({
     this.loadingWidget,
     this.errorWidget,
+    this.noPreviewUrlWidget,
     this.thumbnailURL,
     this.previewURL,
     this.cacheManager,
@@ -220,6 +222,8 @@ abstract class INFTRenderingWidget {
     loadingWidget =
         renderingWidgetBuilder.loadingWidget ?? const NFTLoadingWidget();
     errorWidget = renderingWidgetBuilder.errorWidget ?? const NFTErrorWidget();
+    noPreviewUrlWidget =
+        renderingWidgetBuilder.noPreviewUrlWidget ?? const NoPreviewUrlWidget();
     previewURL = renderingWidgetBuilder.previewURL ?? "";
     cacheManager = renderingWidgetBuilder.cacheManager;
     controller = renderingWidgetBuilder.controller;
@@ -237,6 +241,7 @@ abstract class INFTRenderingWidget {
   FocusNode? focusNode;
   Widget loadingWidget = const NFTLoadingWidget();
   Widget errorWidget = const NFTErrorWidget();
+  Widget noPreviewUrlWidget = const NoPreviewUrlWidget();
   String previewURL = "";
   dynamic controller;
   BaseCacheManager? cacheManager;
@@ -264,7 +269,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
+    return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
@@ -311,7 +316,7 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
+    return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   @override
@@ -349,7 +354,7 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   @override
   Widget build(BuildContext context) {
     onLoaded?.call();
-    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
+    return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   @override
@@ -571,9 +576,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     return AnimatedBuilder(
       animation: _stateOfRenderingWidget,
       builder: (context, child) {
-        return previewURL.isEmpty
-            ? const NoPreviewUrlWidget()
-            : _widgetBuilder();
+        return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
       },
     );
   }
@@ -699,9 +702,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     return AnimatedBuilder(
       animation: _stateOfRenderingWidget,
       builder: (context, child) {
-        return previewURL.isEmpty
-            ? const NoPreviewUrlWidget()
-            : _widgetBuilder();
+        return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
       },
     );
   }
@@ -815,7 +816,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
       animation: _stateOfRenderingWidget,
       builder: (context, child) {
         return previewURL.isEmpty
-            ? const NoPreviewUrlWidget()
+            ? noPreviewUrlWidget
             : _widgetBuilder(context);
       },
     );
@@ -902,7 +903,7 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
+    return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   final _loading = ValueNotifier(true);
@@ -973,7 +974,7 @@ class ModelViewerRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    return previewURL.isEmpty ? const NoPreviewUrlWidget() : _widgetBuilder();
+    return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
