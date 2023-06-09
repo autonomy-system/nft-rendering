@@ -598,9 +598,11 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       } else if (_stateOfRenderingWidget.isPreviewLoaded) {
         return Stack(
           children: [
-            AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
-              child: VideoPlayer(_controller!),
+            Center(
+              child: AspectRatio(
+                aspectRatio: _controller!.value.aspectRatio,
+                child: VideoPlayer(_controller!),
+              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
