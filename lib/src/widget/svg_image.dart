@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:nft_rendering/src/extension/xml_ext.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:xml/xml.dart';
 
 class SvgImage extends StatefulWidget {
@@ -45,7 +45,6 @@ class _SvgImageState extends State<SvgImage> {
 
   @override
   void initState() {
-    if (Platform.isAndroid) WebView.platform = AndroidWebView();
     Future(() async {
       String? svg;
       try {
@@ -94,19 +93,25 @@ class _SvgImageState extends State<SvgImage> {
 
           return AspectRatio(
             aspectRatio: 1,
-            child: WebView(
+            child: InAppWebView(
               key: Key(widget.url),
-              zoomEnabled: false,
-              javascriptMode: JavascriptMode.unrestricted,
-              allowsInlineMediaPlayback: true,
-              backgroundColor: Colors.transparent,
+              initialUrlRequest: URLRequest(url: Uri.tryParse("uri")),
+              initialOptions: InAppWebViewGroupOptions(
+                crossPlatform: InAppWebViewOptions(
+                  userAgent: "",
+                  supportZoom: false,
+                  transparentBackground: true,
+                ),
+                ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+              ),
               onWebViewCreated: (controller) {
-                controller.loadHtmlString(svgData);
+                controller.loadUrl(
+                    urlRequest: URLRequest(url: Uri.dataFromString(svgData)));
               },
-              onPageFinished: (_) {
+              onLoadStop: (controller, uri) {
                 widget.onLoaded?.call();
               },
-              onWebResourceError: (WebResourceError error) {
+              onLoadError: (controller, uri, code, message) {
                 setState(() {
                   _webviewLoadFailed = true;
                 });
