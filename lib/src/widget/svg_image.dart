@@ -8,7 +8,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/parser.dart';
 import 'package:http/http.dart' as http;
-import 'package:nft_rendering/src/extension/xml_ext.dart';
 import 'package:xml/xml.dart';
 
 class SvgImage extends StatefulWidget {
@@ -150,31 +149,4 @@ Future<String> _fixSvgSize({
     root.setAttribute("height", "100%");
     return doc.toXmlString();
   }, svgData);
-}
-
-Future<String> _scaleSvgImage({
-  required String svgData,
-  required double maxSize,
-}) async {
-  return compute<List, String>((data) {
-    final svg = data[0] as String;
-    final size = data[1] as double;
-    final doc = XmlDocument.parse(svg);
-    final root = doc.findElements("svg").first;
-    final width = root.absoluteWidth;
-    final height = root.absoluteHeight;
-    if (width < size && height < size) {
-      return svgData;
-    } else {
-      final ratio = width / height;
-      if (ratio > 1) {
-        root.setAttribute("width", "$size");
-        root.setAttribute("height", "${size / ratio}");
-      } else {
-        root.setAttribute("width", "${size * ratio}");
-        root.setAttribute("height", "$size");
-      }
-      return doc.toXmlString();
-    }
-  }, [svgData, maxSize]);
 }
