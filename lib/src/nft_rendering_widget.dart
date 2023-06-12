@@ -183,7 +183,7 @@ class RenderingWidgetBuilder {
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
-  String userAgent;
+  String? userAgent;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -237,7 +237,7 @@ abstract class INFTRenderingWidget {
     isMute = renderingWidgetBuilder.isMute;
     skipViewport = renderingWidgetBuilder.skipViewport;
     focusNode = renderingWidgetBuilder.focusNode;
-    userAgent = renderingWidgetBuilder.userAgent;
+    userAgent = renderingWidgetBuilder.userAgent ?? "";
   }
 
   Function({int? time})? onLoaded;
