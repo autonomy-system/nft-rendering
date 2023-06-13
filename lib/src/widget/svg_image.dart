@@ -4,15 +4,15 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/parser.dart';
 import 'package:http/http.dart' as http;
-import 'package:nft_rendering/src/extension/xml_ext.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:xml/xml.dart';
 
 class SvgImage extends StatefulWidget {
   final String url;
+  final String userAgent;
   final bool fallbackToWebView;
   final BaseCacheManager? cacheManager;
   final WidgetBuilder? loadingWidgetBuilder;
@@ -23,6 +23,7 @@ class SvgImage extends StatefulWidget {
 
   const SvgImage({
     super.key,
+    this.userAgent = "",
     required this.url,
     this.fallbackToWebView = false,
     this.cacheManager,
@@ -45,7 +46,6 @@ class _SvgImageState extends State<SvgImage> {
 
   @override
   void initState() {
-    if (Platform.isAndroid) WebView.platform = AndroidWebView();
     Future(() async {
       String? svg;
       try {
@@ -94,19 +94,25 @@ class _SvgImageState extends State<SvgImage> {
 
           return AspectRatio(
             aspectRatio: 1,
-            child: WebView(
+            child: InAppWebView(
               key: Key(widget.url),
-              zoomEnabled: false,
-              javascriptMode: JavascriptMode.unrestricted,
-              allowsInlineMediaPlayback: true,
-              backgroundColor: Colors.transparent,
+              initialUrlRequest: URLRequest(url: Uri.tryParse("uri")),
+              initialOptions: InAppWebViewGroupOptions(
+                crossPlatform: InAppWebViewOptions(
+                  userAgent: widget.userAgent,
+                  supportZoom: false,
+                  transparentBackground: true,
+                ),
+                ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+              ),
               onWebViewCreated: (controller) {
-                controller.loadHtmlString(svgData);
+                controller.loadUrl(
+                    urlRequest: URLRequest(url: Uri.dataFromString(svgData)));
               },
-              onPageFinished: (_) {
+              onLoadStop: (controller, uri) {
                 widget.onLoaded?.call();
               },
-              onWebResourceError: (WebResourceError error) {
+              onLoadError: (controller, uri, code, message) {
                 setState(() {
                   _webviewLoadFailed = true;
                 });
@@ -143,31 +149,4 @@ Future<String> _fixSvgSize({
     root.setAttribute("height", "100%");
     return doc.toXmlString();
   }, svgData);
-}
-
-Future<String> _scaleSvgImage({
-  required String svgData,
-  required double maxSize,
-}) async {
-  return compute<List, String>((data) {
-    final svg = data[0] as String;
-    final size = data[1] as double;
-    final doc = XmlDocument.parse(svg);
-    final root = doc.findElements("svg").first;
-    final width = root.absoluteWidth;
-    final height = root.absoluteHeight;
-    if (width < size && height < size) {
-      return svgData;
-    } else {
-      final ratio = width / height;
-      if (ratio > 1) {
-        root.setAttribute("width", "$size");
-        root.setAttribute("height", "${size / ratio}");
-      } else {
-        root.setAttribute("width", "${size * ratio}");
-        root.setAttribute("height", "$size");
-      }
-      return doc.toXmlString();
-    }
-  }, [svgData, maxSize]);
 }

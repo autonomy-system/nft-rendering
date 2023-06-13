@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
@@ -7,7 +8,12 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart'
+    as inapp_webview;
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
+import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
+    as inapp_webview_macos;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
@@ -16,7 +22,6 @@ import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 /// Get nft rendering widget by type
 /// You can add and define more types by creating classes extends [INFTRenderingWidget]
@@ -179,6 +184,7 @@ class RenderingWidgetBuilder {
   Function({int? time})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
+  String? userAgent;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -195,6 +201,7 @@ class RenderingWidgetBuilder {
     this.isMute = false,
     this.focusNode,
     this.skipViewport = false,
+    this.userAgent = "",
   });
 }
 
@@ -234,6 +241,7 @@ abstract class INFTRenderingWidget {
     isMute = renderingWidgetBuilder.isMute;
     skipViewport = renderingWidgetBuilder.skipViewport;
     focusNode = renderingWidgetBuilder.focusNode;
+    userAgent = renderingWidgetBuilder.userAgent ?? "";
   }
 
   Function({int? time})? onLoaded;
@@ -249,6 +257,7 @@ abstract class INFTRenderingWidget {
   String? overriddenHtml;
   bool isMute = false;
   bool skipViewport = false;
+  String userAgent = "";
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -686,7 +695,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           renderingWidgetBuilder: renderingWidgetBuilder,
         );
 
-  WebViewController? _webViewController;
+  InAppWebViewController? _webViewController;
   TextEditingController? _textController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
   late Key key;
@@ -717,24 +726,35 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             controller: _textController,
             focusNode: focusNode,
             onChanged: (value) {
-              _webViewController?.runJavascript(
-                  'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
+              _webViewController?.evaluateJavascript(
+                  source:
+                      'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
               _textController?.text = '';
             },
           ),
         ),
-        WebView(
+        InAppWebView(
           key: Key(previewURL),
-          initialUrl: overriddenHtml != null ? 'about:blank' : previewURL,
-          initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-          onWebViewCreated: (WebViewController webViewController) {
-            _webViewController = webViewController;
+          initialUrlRequest: inapp_webview.URLRequest(
+              url: Uri.tryParse(
+                  overriddenHtml != null ? 'about:blank' : previewURL)),
+          initialOptions: InAppWebViewGroupOptions(
+              crossPlatform: InAppWebViewOptions(
+                userAgent: userAgent,
+                mediaPlaybackRequiresUserGesture: false,
+              ),
+              android: AndroidInAppWebViewOptions(),
+              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
+          onWebViewCreated: (controller) {
+            _webViewController = controller;
             if (overriddenHtml != null) {
-              _webViewController?.loadHtmlString(overriddenHtml!);
+              final uri = Uri.dataFromString(overriddenHtml!,
+                  mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
+              _webViewController?.loadUrl(
+                  urlRequest: inapp_webview.URLRequest(url: uri));
             }
           },
-          onWebResourceError: (WebResourceError error) {},
-          onPageFinished: (some) async {
+          onLoadStop: (controller, uri) async {
             _stateOfRenderingWidget.previewLoaded();
             onLoaded?.call();
             const javascriptString = '''
@@ -742,21 +762,20 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                             meta.setAttribute('name', 'viewport');
                             document.getElementsByTagName('head')[0].appendChild(meta);
                 ''';
-            await _webViewController?.runJavascript(javascriptString);
+            await _webViewController?.evaluateJavascript(
+                source: javascriptString);
 
             if (!skipViewport) {
-              await _webViewController?.runJavascript(
-                  '''document.body.style.overflow = 'hidden';''');
+              await _webViewController?.evaluateJavascript(
+                  source: '''document.body.style.overflow = 'hidden';''');
             }
 
             if (isMute) {
-              _webViewController?.runJavascript(
-                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+              _webViewController?.evaluateJavascript(
+                  source:
+                      "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
             }
           },
-          javascriptMode: JavascriptMode.unrestricted,
-          allowsInlineMediaPlayback: true,
-          backgroundColor: Colors.black,
         ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
@@ -767,22 +786,25 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   void didPopNext() {
-    _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+    _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
   }
 
   @override
   void dispose() {
-    _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+    _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     _textController?.dispose();
     _webViewController = null;
   }
 
   @override
   Future<bool> clearPrevious() async {
-    await _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+    await _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     return true;
   }
 
@@ -791,8 +813,9 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-          () => _webViewController?.runJavascript(
-              "window.dispatchEvent(new Event('resize'));") // <-- The target method
+          () => _webViewController?.evaluateJavascript(
+              source:
+                  "window.dispatchEvent(new Event('resize'));") // <-- The target method
           );
     }
   }
@@ -832,13 +855,15 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
           padding: EdgeInsets.only(top: heightRatio * 92),
           child: InlineWebViewMacOs(
             key: Key(previewURL),
-            initialUrlRequest: URLRequest(url: Uri.tryParse(previewURL)),
+            initialUrlRequest:
+                inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
             width: size.width,
             height: size.height,
             onWebViewCreated: (webViewController) async {
               _webViewController = webViewController;
               await _webViewController?.loadUrl(
-                  urlRequest: URLRequest(url: Uri.tryParse(previewURL)));
+                  urlRequest: inapp_webview_macos.URLRequest(
+                      url: Uri.tryParse(previewURL)));
               _stateOfRenderingWidget.previewLoaded();
               onLoaded?.call();
               const javascriptString = '''
