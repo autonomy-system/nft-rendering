@@ -14,6 +14,7 @@ dependencies:
   flutter_svg: ^1.1.5
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.0
+  flutter_inappwebview: ^5.7.2+3
   http: ^0.13.5
   audio_session: ^0.1.10
   just_audio: ^0.9.29
