@@ -181,7 +181,7 @@ class RenderingWidgetBuilder {
   final String? overriddenHtml;
   final bool isMute;
   final bool skipViewport;
-  Function({int? time})? onLoaded;
+  Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
   String? userAgent;
@@ -244,7 +244,7 @@ abstract class INFTRenderingWidget {
     userAgent = renderingWidgetBuilder.userAgent ?? "";
   }
 
-  Function({int? time})? onLoaded;
+  Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
   Widget loadingWidget = const NFTLoadingWidget();
@@ -610,9 +610,11 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       } else if (_stateOfRenderingWidget.isPreviewLoaded) {
         return Stack(
           children: [
-            AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
-              child: VideoPlayer(_controller!),
+            Center(
+              child: AspectRatio(
+                aspectRatio: _controller!.value.aspectRatio,
+                child: VideoPlayer(_controller!),
+              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
@@ -756,7 +758,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           },
           onLoadStop: (controller, uri) async {
             _stateOfRenderingWidget.previewLoaded();
-            onLoaded?.call();
+            onLoaded?.call(webViewController: _webViewController);
             const javascriptString = '''
                 var meta = document.createElement('meta');
                             meta.setAttribute('name', 'viewport');
