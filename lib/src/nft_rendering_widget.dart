@@ -547,9 +547,9 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   @override
   Future<void> pauseOrResume() async {
     if (_controller?.value.isPlaying ?? false) {
-      _controller?.play();
-    } else {
       await _controller?.pause();
+    } else {
+      await _controller?.play();
     }
   }
 
