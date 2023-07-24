@@ -265,6 +265,8 @@ abstract class INFTRenderingWidget {
 
   void didPopNext();
 
+  Future<void> pauseOrResume() async {}
+
   Future<bool> clearPrevious();
 }
 
@@ -413,6 +415,15 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
     _disposeAudioPlayer();
   }
 
+  @override
+  Future<void> pauseOrResume() async {
+    if (_player?.playing == true) {
+      await _pauseAudio();
+    } else {
+      await _resumeAudio();
+    }
+  }
+
   Future _disposeAudioPlayer() async {
     await _player?.dispose();
     _player = null;
@@ -531,6 +542,15 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
     });
+  }
+
+  @override
+  Future<void> pauseOrResume() async {
+    if (_controller?.value.isPlaying ?? false) {
+      await _controller?.pause();
+    } else {
+      await _controller?.play();
+    }
   }
 
   VideoPlayerController? _controller;
