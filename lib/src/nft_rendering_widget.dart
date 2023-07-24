@@ -414,10 +414,10 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
   void dispose() {
     _disposeAudioPlayer();
   }
-  
+
   @override
   Future<void> pauseOrResume() async {
-    if(_player?.playing == true) {
+    if (_player?.playing == true) {
       await _pauseAudio();
     } else {
       await _resumeAudio();
