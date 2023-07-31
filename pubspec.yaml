@@ -18,7 +18,7 @@ dependencies:
   http: ^0.13.5
   audio_session: ^0.1.10
   just_audio: ^0.9.29
-  video_player: ^2.4.10
+  video_player: ^2.7.0
   webview_flutter: ^3.0.1
   easy_debounce: ^2.0.2+1
   syncfusion_flutter_pdfviewer: ^20.3.48
@@ -28,7 +28,7 @@ dependencies:
       url: https://github.com/autonomy-system/flutter_inline_webview_macos
       ref: 1.0.1
 
-  video_player_macos: 1.0.6
+  video_player_macos: 2.0.1
   model_viewer_plus: 1.4.0
 
 dev_dependencies:
