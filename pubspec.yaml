@@ -11,15 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_svg: ^1.1.5
+  flutter_svg: ^2.0.6
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.0
   flutter_inappwebview: ^5.7.2+3
   http: ^0.13.5
   audio_session: ^0.1.10
   just_audio: ^0.9.29
-  video_player: ^2.4.10
-  webview_flutter: ^3.0.1
+  video_player: ^2.7.0
   easy_debounce: ^2.0.2+1
   syncfusion_flutter_pdfviewer: ^20.3.48
   xml: ^6.1.0
@@ -28,8 +27,8 @@ dependencies:
       url: https://github.com/autonomy-system/flutter_inline_webview_macos
       ref: 1.0.1
 
-  video_player_macos: 1.0.6
-  model_viewer_plus: 1.4.0
+  video_player_macos: 2.0.1
+  model_viewer_plus: 1.6.1
 
 dev_dependencies:
   flutter_test:

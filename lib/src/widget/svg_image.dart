@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_svg/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
@@ -61,12 +60,6 @@ class _SvgImageState extends State<SvgImage> {
           svg = await _fixSvgSize(
             svgData: svg,
           );
-        }
-        if (kDebugMode) {
-          await SvgParser().parse(svg, warningsAsErrors: true);
-          _svgString.complete(svg);
-        } else {
-          _svgString.completeError(SvgNotSupported(svg));
         }
       } catch (e) {
         if (svg != null) {
