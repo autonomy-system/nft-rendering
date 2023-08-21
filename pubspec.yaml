@@ -15,12 +15,12 @@ dependencies:
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.0
   flutter_inappwebview: ^5.7.2+3
-  http: ^0.13.5
+  http: ^1.1.0
   audio_session: ^0.1.10
   just_audio: ^0.9.29
   video_player: ^2.6.0
   easy_debounce: ^2.0.2+1
-  syncfusion_flutter_pdfviewer: ^20.3.48
+  syncfusion_flutter_pdfviewer: ^22.2.5
   xml: ^6.1.0
   flutter_inline_webview_macos:
     git:
