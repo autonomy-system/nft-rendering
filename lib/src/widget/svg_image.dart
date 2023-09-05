@@ -101,10 +101,7 @@ class _SvgImageState extends State<SvgImage> {
                 ),
                 ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
               ),
-              onWebViewCreated: (controller) {
-                controller.loadUrl(
-                    urlRequest: URLRequest(url: Uri.dataFromString(svgData)));
-              },
+              onWebViewCreated: (controller) {},
               onLoadStop: (controller, uri) {
                 widget.onLoaded?.call();
               },
