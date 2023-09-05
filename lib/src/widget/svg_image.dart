@@ -7,6 +7,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
 import 'package:xml/xml.dart';
 
 class SvgImage extends StatefulWidget {
@@ -61,6 +62,8 @@ class _SvgImageState extends State<SvgImage> {
             svgData: svg,
           );
         }
+        parse(svg);
+        _svgString.complete(svg);
       } catch (e) {
         if (svg != null) {
           _svgString.completeError(SvgNotSupported(svg));
