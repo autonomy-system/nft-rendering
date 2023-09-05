@@ -92,7 +92,7 @@ class _SvgImageState extends State<SvgImage> {
             aspectRatio: 1,
             child: InAppWebView(
               key: Key(widget.url),
-              initialUrlRequest: URLRequest(url: Uri.tryParse("uri")),
+              initialUrlRequest: URLRequest(url: Uri.tryParse(widget.url)),
               initialOptions: InAppWebViewGroupOptions(
                 crossPlatform: InAppWebViewOptions(
                   userAgent: widget.userAgent,
