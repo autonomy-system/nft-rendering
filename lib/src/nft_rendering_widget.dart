@@ -775,7 +775,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                 };
                 ''', injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)
           ]),
-          onWebViewCreated: (controller) async {
+          onWebViewCreated: (controller) {
             _webViewController = controller;
             if (overriddenHtml != null) {
               final uri = Uri.dataFromString(overriddenHtml!,
