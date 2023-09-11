@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -517,7 +518,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           renderingWidgetBuilder: renderingWidgetBuilder,
         ) {
     runZonedGuarded(() {
-      _controller = VideoPlayerController.network(previewURL);
+      _controller = VideoPlayerController.networkUrl(Uri.parse(previewURL));
 
       _controller!.initialize().then((_) async {
         _stateOfRenderingWidget.previewLoaded();
@@ -565,7 +566,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         _controller?.dispose();
         _controller = null;
       }
-      _controller = VideoPlayerController.network(previewURL);
+      _controller = VideoPlayerController.networkUrl(Uri.parse(previewURL));
 
       _controller!.initialize().then((_) async {
         final time = _controller?.value.duration.inSeconds;
@@ -767,6 +768,13 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
               ),
               android: AndroidInAppWebViewOptions(),
               ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
+          initialUserScripts: UnmodifiableListView<UserScript>([
+            UserScript(source: '''
+                window.print = function () {
+                  console.log('Skip printing');
+                };
+                ''', injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)
+          ]),
           onWebViewCreated: (controller) {
             _webViewController = controller;
             if (overriddenHtml != null) {
