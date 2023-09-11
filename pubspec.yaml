@@ -30,6 +30,7 @@ dependencies:
   video_player_macos: ^2.0.1
   model_viewer_plus: 1.6.1
   video_player_platform_interface: ^6.2.0
+  vector_graphics_compiler: ^1.1.7
 
 dev_dependencies:
   flutter_test:
