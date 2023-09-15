@@ -86,13 +86,11 @@ class _SvgImageState extends State<SvgImage> {
             widget.fallbackToWebView &&
             !_webviewLoadFailed &&
             !Platform.isMacOS) {
-          final svgData = (snapshot.error as SvgNotSupported).svgData;
-
           return AspectRatio(
             aspectRatio: 1,
             child: InAppWebView(
               key: Key(widget.url),
-              initialUrlRequest: URLRequest(url: Uri.tryParse("uri")),
+              initialUrlRequest: URLRequest(url: Uri.tryParse(widget.url)),
               initialOptions: InAppWebViewGroupOptions(
                 crossPlatform: InAppWebViewOptions(
                   userAgent: widget.userAgent,
@@ -101,10 +99,7 @@ class _SvgImageState extends State<SvgImage> {
                 ),
                 ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
               ),
-              onWebViewCreated: (controller) {
-                controller.loadUrl(
-                    urlRequest: URLRequest(url: Uri.dataFromString(svgData)));
-              },
+              onWebViewCreated: (controller) {},
               onLoadStop: (controller, uri) {
                 widget.onLoaded?.call();
               },
