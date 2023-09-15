@@ -86,8 +86,6 @@ class _SvgImageState extends State<SvgImage> {
             widget.fallbackToWebView &&
             !_webviewLoadFailed &&
             !Platform.isMacOS) {
-          final svgData = (snapshot.error as SvgNotSupported).svgData;
-
           return AspectRatio(
             aspectRatio: 1,
             child: InAppWebView(
