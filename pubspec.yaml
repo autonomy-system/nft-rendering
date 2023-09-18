@@ -22,6 +22,7 @@ dependencies:
   easy_debounce: ^2.0.2+1
   syncfusion_flutter_pdfviewer: ^22.2.5
   xml: ^6.1.0
+  logging: ^1.2.0
   flutter_inline_webview_macos:
     git:
       url: https://github.com/autonomy-system/flutter_inline_webview_macos
