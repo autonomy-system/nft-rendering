@@ -140,7 +140,8 @@ class RenderingType {
   static const modelViewer = 'modelViewer';
 }
 
-INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
+INFTRenderingWidget typesOfNFTRenderingWidget(String type,
+    {RenderingWidgetBuilder? builder}) {
   switch (type) {
     case RenderingType.image:
       return ImageNFTRenderingWidget();
@@ -151,7 +152,7 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
     case RenderingType.audio:
       return AudioNFTRenderingWidget();
     case RenderingType.video:
-      return VideoNFTRenderingWidget();
+      return VideoNFTRenderingWidget(renderingWidgetBuilder: builder);
     case RenderingType.pdf:
       return PDFNFTRenderingWidget();
     case RenderingType.modelViewer:
@@ -518,28 +519,35 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           renderingWidgetBuilder: renderingWidgetBuilder,
         ) {
     runZonedGuarded(() {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(previewURL));
-
-      _controller!.initialize().then((_) async {
-        _stateOfRenderingWidget.previewLoaded();
-        final durationVideo = _controller?.value.duration.inSeconds ?? 0;
-        Duration position;
-        if (latestPosition == null || latestPosition! >= durationVideo) {
-          position = const Duration(seconds: 0);
-        } else {
-          position = Duration(seconds: latestPosition!);
-        }
-        await _controller?.seekTo(position);
-        if (isMute) {
-          _controller?.setVolume(0);
-        }
-        onLoaded?.call(time: durationVideo);
-        _controller?.setLooping(true);
-        if (_playAfterInitialized) {
-          _controller?.play();
-        }
-        _controller?.addListener(_controlerListener);
-      });
+      if (renderingWidgetBuilder?.controller != null &&
+          renderingWidgetBuilder?.controller?.value.isInitialized == true) {
+        _controller = renderingWidgetBuilder?.controller;
+      } else {
+        renderingWidgetBuilder?.controller =
+            VideoPlayerController.networkUrl(Uri.parse(previewURL));
+        renderingWidgetBuilder?.controller!.initialize().then((_) async {
+          _stateOfRenderingWidget.previewLoaded();
+          final durationVideo =
+              renderingWidgetBuilder.controller?.value.duration.inSeconds ?? 0;
+          Duration position;
+          if (latestPosition == null || latestPosition! >= durationVideo) {
+            position = const Duration(seconds: 0);
+          } else {
+            position = Duration(seconds: latestPosition!);
+          }
+          await renderingWidgetBuilder.controller?.seekTo(position);
+          if (isMute) {
+            _controller?.setVolume(0);
+          }
+          onLoaded?.call(time: durationVideo);
+          renderingWidgetBuilder.controller?.setLooping(true);
+          if (_playAfterInitialized) {
+            _controller?.play();
+          }
+          renderingWidgetBuilder.controller.addListener(_controlerListener);
+          _controller = renderingWidgetBuilder.controller;
+        });
+      }
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
     });
@@ -562,40 +570,49 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     super.setRenderWidgetBuilder(renderingWidgetBuilder);
     runZonedGuarded(() {
       _thumbnailURL = renderingWidgetBuilder.thumbnailURL;
-      if (_controller != null) {
-        _controller?.dispose();
-        _controller = null;
-      }
-      _controller = VideoPlayerController.networkUrl(Uri.parse(previewURL));
 
-      _controller!.initialize().then((_) async {
-        final time = _controller?.value.duration.inSeconds;
-        Duration position;
-        if (latestPosition == null ||
-            latestPosition! >= _controller!.value.duration.inSeconds) {
-          position = const Duration(seconds: 0);
-        } else {
-          position = Duration(seconds: latestPosition!);
+      if (renderingWidgetBuilder.controller != null &&
+          renderingWidgetBuilder.controller?.value.isInitialized == true) {
+        _controller = renderingWidgetBuilder.controller;
+      } else {
+        if (renderingWidgetBuilder.controller != null) {
+          renderingWidgetBuilder.controller?.dispose();
+          renderingWidgetBuilder.controller = null;
         }
-        await _controller?.seekTo(position);
-        if (isMute) {
-          _controller?.setVolume(0);
-        }
-        onLoaded?.call(time: time);
-        _stateOfRenderingWidget.previewLoaded();
-        _controller?.setLooping(true);
-        if (_playAfterInitialized) {
-          _controller?.play();
-        }
-        _controller?.addListener(_controlerListener);
-      });
+        renderingWidgetBuilder.controller =
+            VideoPlayerController.networkUrl(Uri.parse(previewURL));
+
+        renderingWidgetBuilder.controller!.initialize().then((_) async {
+          final time =
+              renderingWidgetBuilder.controller?.value.duration.inSeconds;
+          Duration position;
+          if (latestPosition == null ||
+              latestPosition! >= _controller!.value.duration.inSeconds) {
+            position = const Duration(seconds: 0);
+          } else {
+            position = Duration(seconds: latestPosition!);
+          }
+          await renderingWidgetBuilder.controller?.seekTo(position);
+          if (isMute) {
+            renderingWidgetBuilder.controller?.setVolume(0);
+          }
+          onLoaded?.call(time: time);
+          _stateOfRenderingWidget.previewLoaded();
+          renderingWidgetBuilder.controller?.setLooping(true);
+          if (_playAfterInitialized) {
+            renderingWidgetBuilder.controller?.play();
+          }
+          renderingWidgetBuilder.controller?.addListener(_controlerListener);
+          _controller = renderingWidgetBuilder.controller;
+        });
+      }
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
     });
   }
 
   void _controlerListener() {
-    final positon = _controller?.value.position;
+    final positon = controller?.value.position;
     if (positon != null) {
       positionListener.value = positon;
     }
