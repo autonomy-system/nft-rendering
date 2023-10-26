@@ -788,9 +788,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             _stateOfRenderingWidget.previewLoaded();
             onLoaded?.call(webViewController: _webViewController);
             const javascriptString = '''
-                var meta = document.createElement('meta');
-                            meta.setAttribute('name', 'viewport');
-                            document.getElementsByTagName('head')[0].appendChild(meta);
+            window.document.head.innerHTML += '<meta name="viewport" content="width=device-width, initial-scale=1">'
                 ''';
             await _webViewController?.evaluateJavascript(
                 source: javascriptString);
