@@ -765,6 +765,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
               crossPlatform: InAppWebViewOptions(
                 userAgent: userAgent,
                 mediaPlaybackRequiresUserGesture: false,
+                preferredContentMode: UserPreferredContentMode.MOBILE,
               ),
               android: AndroidInAppWebViewOptions(),
               ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
