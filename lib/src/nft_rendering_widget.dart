@@ -777,12 +777,22 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           ]),
           onWebViewCreated: (controller) {
             _webViewController = controller;
-            if (overriddenHtml != null) {
-              final uri = Uri.dataFromString(overriddenHtml!,
-                  mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
-              _webViewController?.loadUrl(
-                  urlRequest: inapp_webview.URLRequest(url: uri));
-            }
+            final defaultHtml = '''
+              <html>
+                <head>
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body>
+                  <div id="root" style="position: relative; width: 100%; padding-bottom: 100%;">
+                  <iframe id= "autonomy-iframe" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" class="w-full" frameborder="0" height="100%" width="100%" id="AssetMedia--frame" sandbox="allow-forms allow-modals allow-same-origin allow-scripts allow-top-navigation allow-popups-to-escape-sandbox allow-popups allow-downloads allow-orientation-lock allow-pointer-lock" src=${previewURL} style="min-height: 100px; min-width: 100px"></iframe>
+                  </div>
+                </body>
+              </html>
+              ''';
+            final uri = Uri.dataFromString(overriddenHtml ?? defaultHtml,
+                mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
+            _webViewController?.loadUrl(
+                urlRequest: inapp_webview.URLRequest(url: uri));
           },
           onLoadStop: (controller, uri) async {
             _stateOfRenderingWidget.previewLoaded();
