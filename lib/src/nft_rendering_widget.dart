@@ -781,6 +781,12 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
               <html>
                 <head>
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <style>
+                    body,html {
+                      margin:0;
+                      padding:0;
+                    }
+                  </style>
                 </head>
                 <body>
                   <div id="root" style="position: relative; width: 100%;">
