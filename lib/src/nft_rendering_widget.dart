@@ -783,8 +783,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 </head>
                 <body>
-                  <div id="root" style="position: relative; width: 100%; padding-bottom: 100%;">
-                  <iframe id= "autonomy-iframe" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" class="w-full" frameborder="0" height="100%" width="100%" id="AssetMedia--frame" sandbox="allow-forms allow-modals allow-same-origin allow-scripts allow-top-navigation allow-popups-to-escape-sandbox allow-popups allow-downloads allow-orientation-lock allow-pointer-lock" src=${previewURL} style="min-height: 100px; min-width: 100px"></iframe>
+                  <div id="root" style="position: relative; width: 100%;">
+                  <iframe id= "autonomy-iframe" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" frameborder="0" height="100%" width="100%" id="AssetMedia--frame" sandbox="allow-forms allow-modals allow-same-origin allow-scripts allow-top-navigation allow-popups-to-escape-sandbox allow-popups allow-downloads allow-orientation-lock allow-pointer-lock" src=${previewURL}></iframe>
                   </div>
                 </body>
               </html>
