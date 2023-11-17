@@ -792,7 +792,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             ''';
             if (Platform.isIOS) {
               javascriptString = '''
-            window.document.head.innerHTML += '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            window.document.head.innerHTML += '<meta name="viewport" content="width=device-width, initial-scale=0.5">'
                 ''';
             }
             await _webViewController?.evaluateJavascript(
