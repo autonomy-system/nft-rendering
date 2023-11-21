@@ -1052,8 +1052,7 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   Future<File> _createFileOfPdfUrl() async {
     Completer<File> completer = Completer();
     try {
-      //final url = previewURL;\
-      const url = "http://www.pdf995.com/samples/pdf.pdf";
+      final url = previewURL;
       final filename = url.substring(url.lastIndexOf("/") + 1);
       var request = await HttpClient().getUrl(Uri.parse(url));
       var response = await request.close();
