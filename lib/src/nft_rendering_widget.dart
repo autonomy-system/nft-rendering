@@ -12,10 +12,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
-as inapp_webview;
+    as inapp_webview;
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
-as inapp_webview_macos;
+    as inapp_webview_macos;
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 
 // ignore: depend_on_referenced_packages
@@ -276,8 +276,8 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
   ImageNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -323,8 +323,8 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
   SVGNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -360,8 +360,8 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   GifNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -386,10 +386,9 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
       placeholder: (context, url) => loadingWidget,
       placeholderFadeInDuration: const Duration(milliseconds: 300),
       fadeOutDuration: const Duration(milliseconds: 0),
-      errorWidget: (context, url, error) =>
-          Center(
-            child: errorWidget,
-          ),
+      errorWidget: (context, url, error) => Center(
+        child: errorWidget,
+      ),
       fit: BoxFit.cover,
     );
   }
@@ -487,10 +486,9 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
             placeholder: (context, url) => loadingWidget,
             placeholderFadeInDuration: const Duration(milliseconds: 300),
             fadeOutDuration: const Duration(milliseconds: 0),
-            errorWidget: (context, url, error) =>
-                Center(
-                  child: errorWidget,
-                ),
+            errorWidget: (context, url, error) => Center(
+              child: errorWidget,
+            ),
             fit: BoxFit.contain,
           ),
         ),
@@ -517,8 +515,8 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  ) {
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        ) {
     runZonedGuarded(() {
       _controller = VideoPlayerController.networkUrl(Uri.parse(previewURL));
 
@@ -618,18 +616,16 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
         return CachedNetworkImage(
           imageUrl: _thumbnailURL!,
-          imageBuilder: (context, imageProvider) =>
-              Image(
-                image: imageProvider,
-              ),
+          imageBuilder: (context, imageProvider) => Image(
+            image: imageProvider,
+          ),
           cacheManager: cacheManager,
           placeholder: (context, url) => loadingWidget,
           placeholderFadeInDuration: const Duration(milliseconds: 300),
           fadeOutDuration: const Duration(milliseconds: 0),
-          errorWidget: (context, url, error) =>
-              Center(
-                child: errorWidget,
-              ),
+          errorWidget: (context, url, error) => Center(
+            child: errorWidget,
+          ),
           fit: BoxFit.cover,
         );
       } else if (_stateOfRenderingWidget.isPreviewLoaded) {
@@ -719,8 +715,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   WebviewNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   InAppWebViewController? _webViewController;
   TextEditingController? _textController;
@@ -755,16 +751,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             onChanged: (value) {
               _webViewController?.evaluateJavascript(
                   source:
-                  'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value
-                      .characters.last}\',\'keyCode\': ${keysCode[value
-                      .characters.last]},\'which\': ${keysCode[value.characters
-                      .last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value
-                      .characters.last}\',\'keyCode\': ${keysCode[value
-                      .characters.last]},\'which\': ${keysCode[value.characters
-                      .last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value
-                      .characters.last}\',\'keyCode\': ${keysCode[value
-                      .characters.last]},\'which\': ${keysCode[value.characters
-                      .last]}}));');
+                      'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
               _textController?.text = '';
             },
           ),
@@ -819,7 +806,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             if (isMute) {
               _webViewController?.evaluateJavascript(
                   source:
-                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+                      "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
             }
           },
         ),
@@ -834,14 +821,14 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   void didPopNext() {
     _webViewController?.evaluateJavascript(
         source:
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
   }
 
   @override
   void dispose() {
     _webViewController?.evaluateJavascript(
         source:
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     _textController?.dispose();
     _webViewController = null;
   }
@@ -850,7 +837,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   Future<bool> clearPrevious() async {
     await _webViewController?.evaluateJavascript(
         source:
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     return true;
   }
 
@@ -859,11 +846,10 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-              () =>
-              _webViewController?.evaluateJavascript(
-                  source:
+          () => _webViewController?.evaluateJavascript(
+              source:
                   "window.dispatchEvent(new Event('resize'));") // <-- The target method
-      );
+          );
     }
   }
 }
@@ -873,8 +859,8 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   WebviewMacOSNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   InlineWebViewMacOsController? _webViewController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -893,9 +879,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   Widget _widgetBuilder(BuildContext context) {
-    final size = MediaQuery
-        .of(context)
-        .size;
+    final size = MediaQuery.of(context).size;
     final heightRatio = size.height / 1080;
     return Stack(
       fit: StackFit.loose,
@@ -905,7 +889,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
           child: InlineWebViewMacOs(
             key: Key(previewURL),
             initialUrlRequest:
-            inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
+                inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
             width: size.width,
             height: size.height,
             onWebViewCreated: (webViewController) async {
@@ -960,10 +944,9 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
       EasyDebounce.debounce(
           'screen_rotate', // <-- An ID for this particular debouncer
           const Duration(milliseconds: 100), // <-- The debounce duration
-              () =>
-              _webViewController?.runJavascript(
-                  "window.dispatchEvent(new Event('resize'));") // <-- The target method
-      );
+          () => _webViewController?.runJavascript(
+              "window.dispatchEvent(new Event('resize'));") // <-- The target method
+          );
     }
   }
 }
@@ -973,10 +956,10 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   PDFNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
   final Completer<PDFViewController> _controller =
-  Completer<PDFViewController>();
+      Completer<PDFViewController>();
 
   @override
   Widget build(BuildContext context) {
@@ -989,46 +972,46 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     return Stack(children: [
       FutureBuilder(
-          future: _createFileOfPdfUrl(), builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final file = snapshot.data as File;
-          return PDFView(
-            key: Key(previewURL),
-            filePath: file.path,
-            enableSwipe: true,
-            swipeHorizontal: false,
-            gestureRecognizers: <Factory<
-                OneSequenceGestureRecognizer>>{
-              Factory<VerticalDragGestureRecognizer>(
+          future: _createFileOfPdfUrl(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final file = snapshot.data as File;
+              return PDFView(
+                key: Key(previewURL),
+                filePath: file.path,
+                enableSwipe: true,
+                swipeHorizontal: false,
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                  Factory<VerticalDragGestureRecognizer>(
                     () => VerticalDragGestureRecognizer(),
-              ),
-            },
-            autoSpacing: false,
-            pageFling: true,
-            pageSnap: false,
-            defaultPage: 0,
-            fitPolicy: FitPolicy.WIDTH,
-            preventLinkNavigation: false,
-            // if set to true the link is handled in flutter
-            onRender: (_) {
-              _isReady.value = true;
-            },
-            onError: (error) {
-              _error.value = error.toString();
-            },
-            onPageError: (page, error) {
-              _error.value = error.toString();
-            },
-            onViewCreated: (PDFViewController pdfViewController) {
-              _controller.complete(pdfViewController);
-            },
-            onLinkHandler: (String? uri) {},
-            onPageChanged: (int? page, int? total) {},
-          );
-        } else {
-          return const SizedBox();
-        }
-      }),
+                  ),
+                },
+                autoSpacing: false,
+                pageFling: true,
+                pageSnap: false,
+                defaultPage: 0,
+                fitPolicy: FitPolicy.WIDTH,
+                preventLinkNavigation: false,
+                // if set to true the link is handled in flutter
+                onRender: (_) {
+                  _isReady.value = true;
+                },
+                onError: (error) {
+                  _error.value = error.toString();
+                },
+                onPageError: (page, error) {
+                  _error.value = error.toString();
+                },
+                onViewCreated: (PDFViewController pdfViewController) {
+                  _controller.complete(pdfViewController);
+                },
+                onLinkHandler: (String? uri) {},
+                onPageChanged: (int? page, int? total) {},
+              );
+            } else {
+              return const SizedBox();
+            }
+          }),
       ValueListenableBuilder<dynamic>(
         valueListenable: _error,
         builder: (context, error, child) {
@@ -1093,8 +1076,8 @@ class ModelViewerRenderingWidget extends INFTRenderingWidget {
   ModelViewerRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
   }) : super(
-    renderingWidgetBuilder: renderingWidgetBuilder,
-  );
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -1131,9 +1114,7 @@ class NoPreviewUrlWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery
-        .of(context)
-        .size;
+    final size = MediaQuery.of(context).size;
     return Stack(
       children: [
         Center(
@@ -1169,9 +1150,12 @@ class RectangleClipper extends CustomClipper<Path> {
     double radius = 14;
 
     Path path = Path()
-      ..lineTo(0, 0)..lineTo(size.width - radius, 0)..lineTo(
-          size.width, radius)..lineTo(size.width, size.height)..lineTo(
-          0, size.height)..lineTo(0, 0)
+      ..lineTo(0, 0)
+      ..lineTo(size.width - radius, 0)
+      ..lineTo(size.width, radius)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..lineTo(0, 0)
       ..close();
 
     return path;
