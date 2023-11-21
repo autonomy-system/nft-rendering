@@ -12,7 +12,6 @@ import 'package:xml/xml.dart';
 
 class SvgImage extends StatefulWidget {
   final String url;
-  final String userAgent;
   final bool fallbackToWebView;
   final BaseCacheManager? cacheManager;
   final WidgetBuilder? loadingWidgetBuilder;
@@ -23,7 +22,6 @@ class SvgImage extends StatefulWidget {
 
   const SvgImage({
     super.key,
-    this.userAgent = "",
     required this.url,
     this.fallbackToWebView = false,
     this.cacheManager,
@@ -93,7 +91,6 @@ class _SvgImageState extends State<SvgImage> {
               initialUrlRequest: URLRequest(url: Uri.tryParse(widget.url)),
               initialOptions: InAppWebViewGroupOptions(
                 crossPlatform: InAppWebViewOptions(
-                  userAgent: widget.userAgent,
                   supportZoom: false,
                   transparentBackground: true,
                 ),

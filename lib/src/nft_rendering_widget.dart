@@ -185,7 +185,6 @@ class RenderingWidgetBuilder {
   Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
-  String? userAgent;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -202,7 +201,6 @@ class RenderingWidgetBuilder {
     this.isMute = false,
     this.focusNode,
     this.skipViewport = false,
-    this.userAgent = "",
   });
 }
 
@@ -242,7 +240,6 @@ abstract class INFTRenderingWidget {
     isMute = renderingWidgetBuilder.isMute;
     skipViewport = renderingWidgetBuilder.skipViewport;
     focusNode = renderingWidgetBuilder.focusNode;
-    userAgent = renderingWidgetBuilder.userAgent ?? "";
   }
 
   Function({int? time, InAppWebViewController? webViewController})? onLoaded;
@@ -258,7 +255,6 @@ abstract class INFTRenderingWidget {
   String? overriddenHtml;
   bool isMute = false;
   bool skipViewport = false;
-  String userAgent = "";
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -763,8 +759,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                   overriddenHtml != null ? 'about:blank' : previewURL)),
           initialOptions: InAppWebViewGroupOptions(
               crossPlatform: InAppWebViewOptions(
-                userAgent: userAgent,
                 mediaPlaybackRequiresUserGesture: false,
+                preferredContentMode: UserPreferredContentMode.MOBILE,
               ),
               android: AndroidInAppWebViewOptions(),
               ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
