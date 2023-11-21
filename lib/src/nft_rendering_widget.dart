@@ -1000,7 +1000,7 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
             pageFling: true,
             pageSnap: true,
             defaultPage: 0,
-            fitPolicy: FitPolicy.BOTH,
+            fitPolicy: FitPolicy.WIDTH,
             preventLinkNavigation: false,
             // if set to true the link is handled in flutter
             onRender: (_) {
