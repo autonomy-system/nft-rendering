@@ -7,6 +7,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -995,10 +996,16 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
             key: Key(previewURL),
             filePath: file.path,
             enableSwipe: true,
-            swipeHorizontal: true,
+            swipeHorizontal: false,
+            gestureRecognizers: <Factory<
+                OneSequenceGestureRecognizer>>{
+              Factory<VerticalDragGestureRecognizer>(
+                    () => VerticalDragGestureRecognizer(),
+              ),
+            },
             autoSpacing: false,
             pageFling: true,
-            pageSnap: true,
+            pageSnap: false,
             defaultPage: 0,
             fitPolicy: FitPolicy.WIDTH,
             preventLinkNavigation: false,
