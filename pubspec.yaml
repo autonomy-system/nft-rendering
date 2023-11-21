@@ -2,6 +2,7 @@ name: nft_rendering
 description: A displaying widget supports various types of NFT.
 version: 1.0.9
 homepage: https://github.com/autonomy-system/nft-rendering
+publish_to: none
 
 environment:
   sdk: ">=2.17.1 <3.0.0"
