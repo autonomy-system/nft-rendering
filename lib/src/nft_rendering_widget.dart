@@ -986,9 +986,9 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
                     () => VerticalDragGestureRecognizer(),
                   ),
                 },
-                autoSpacing: false,
-                pageFling: true,
-                pageSnap: false,
+                autoSpacing: true,
+                pageFling: false,
+                pageSnap: true,
                 defaultPage: 0,
                 fitPolicy: FitPolicy.WIDTH,
                 preventLinkNavigation: false,
@@ -997,10 +997,10 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
                   _isReady.value = true;
                 },
                 onError: (error) {
-                  _error.value = error.toString();
+                  _error.value = error;
                 },
                 onPageError: (page, error) {
-                  _error.value = error.toString();
+                  _error.value = error;
                 },
                 onViewCreated: (PDFViewController pdfViewController) {
                   _controller.complete(pdfViewController);
