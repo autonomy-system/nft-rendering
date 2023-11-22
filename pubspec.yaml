@@ -2,6 +2,7 @@ name: nft_rendering
 description: A displaying widget supports various types of NFT.
 version: 1.0.9
 homepage: https://github.com/autonomy-system/nft-rendering
+publish_to: none
 
 environment:
   sdk: ">=2.17.1 <3.0.0"
@@ -20,7 +21,6 @@ dependencies:
   just_audio: ^0.9.29
   video_player: ^2.7.0
   easy_debounce: ^2.0.2+1
-  syncfusion_flutter_pdfviewer: ^22.2.5
   xml: ^6.1.0
   flutter_inline_webview_macos:
     git:
@@ -31,6 +31,7 @@ dependencies:
   model_viewer_plus: 1.6.1
   video_player_platform_interface: ^6.2.0
   vector_graphics_compiler: ^1.1.7
+  flutter_pdfview: ^1.3.2
 
 dev_dependencies:
   flutter_test:

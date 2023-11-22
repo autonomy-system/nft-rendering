@@ -7,6 +7,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -15,13 +16,16 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart'
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
     as inapp_webview_macos;
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+
+// ignore: depend_on_referenced_packages
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 
 /// Get nft rendering widget by type
@@ -954,33 +958,62 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
   }) : super(
           renderingWidgetBuilder: renderingWidgetBuilder,
         );
+  final Completer<PDFViewController> _controller =
+      Completer<PDFViewController>();
 
   @override
   Widget build(BuildContext context) {
     return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
-  final _loading = ValueNotifier(true);
-  final _loadError = ValueNotifier<PdfDocumentLoadFailedDetails?>(null);
+  final _isReady = ValueNotifier(true);
+  final _error = ValueNotifier<dynamic>(null);
 
   Widget _widgetBuilder() {
     return Stack(children: [
-      SfPdfViewer.network(
-        previewURL,
-        key: Key(previewURL),
-        controller: controller is PdfViewerController ? controller : null,
-        onDocumentLoaded: (_) {
-          onLoaded?.call();
-          _loading.value = false;
-        },
-        onDocumentLoadFailed: (error) {
-          onLoaded?.call();
-          _loading.value = false;
-          _loadError.value = error;
-        },
-      ),
-      ValueListenableBuilder<PdfDocumentLoadFailedDetails?>(
-        valueListenable: _loadError,
+      FutureBuilder(
+          future: _createFileOfPdfUrl(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final file = snapshot.data as File;
+              return PDFView(
+                key: Key(previewURL),
+                filePath: file.path,
+                enableSwipe: true,
+                swipeHorizontal: false,
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                  Factory<VerticalDragGestureRecognizer>(
+                    () => VerticalDragGestureRecognizer(),
+                  ),
+                },
+                autoSpacing: false,
+                pageFling: true,
+                pageSnap: false,
+                defaultPage: 0,
+                fitPolicy: FitPolicy.WIDTH,
+                preventLinkNavigation: false,
+                // if set to true the link is handled in flutter
+                onRender: (_) {
+                  _isReady.value = true;
+                },
+                onError: (error) {
+                  _error.value = error.toString();
+                },
+                onPageError: (page, error) {
+                  _error.value = error.toString();
+                },
+                onViewCreated: (PDFViewController pdfViewController) {
+                  _controller.complete(pdfViewController);
+                },
+                onLinkHandler: (String? uri) {},
+                onPageChanged: (int? page, int? total) {},
+              );
+            } else {
+              return const SizedBox();
+            }
+          }),
+      ValueListenableBuilder<dynamic>(
+        valueListenable: _error,
         builder: (context, error, child) {
           return Visibility(
             visible: error != null,
@@ -992,10 +1025,10 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
         },
       ),
       ValueListenableBuilder<bool>(
-        valueListenable: _loading,
-        builder: (context, loading, child) {
+        valueListenable: _isReady,
+        builder: (context, isReady, child) {
           return Visibility(
-            visible: loading,
+            visible: !isReady,
             child: Container(
               color: Colors.black,
               child: loadingWidget,
@@ -1004,6 +1037,26 @@ class PDFNFTRenderingWidget extends INFTRenderingWidget {
         },
       ),
     ]);
+  }
+
+  Future<File> _createFileOfPdfUrl() async {
+    Completer<File> completer = Completer();
+    try {
+      final url = previewURL;
+      final filename = url.substring(url.lastIndexOf("/") + 1);
+      var request = await HttpClient().getUrl(Uri.parse(url));
+      var response = await request.close();
+      var bytes = await consolidateHttpClientResponseBytes(response);
+      var dir = await getApplicationDocumentsDirectory();
+      File file = File("${dir.path}/$filename");
+
+      await file.writeAsBytes(bytes, flush: true);
+      completer.complete(file);
+    } catch (e) {
+      _error.value = e.toString();
+    }
+
+    return completer.future;
   }
 
   @override
