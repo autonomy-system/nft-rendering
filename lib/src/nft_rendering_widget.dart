@@ -1092,6 +1092,7 @@ class ModelViewerRenderingWidget extends INFTRenderingWidget {
           src: previewURL,
           ar: true,
           autoRotate: true,
+          backgroundColor: Colors.black,
         ),
       ],
     );
