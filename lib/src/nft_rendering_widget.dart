@@ -343,15 +343,12 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
   void dispose() {}
 
   Widget _widgetBuilder() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: SvgImage(
-        url: previewURL,
-        fallbackToWebView: true,
-        loadingWidgetBuilder: (context) => loadingWidget,
-        onLoaded: () => onLoaded?.call(),
-        onError: () {},
-      ),
+    return SvgImage(
+      url: previewURL,
+      fallbackToWebView: true,
+      loadingWidgetBuilder: (context) => loadingWidget,
+      onLoaded: () => onLoaded?.call(),
+      onError: () {},
     );
   }
 }
