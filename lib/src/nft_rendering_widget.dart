@@ -825,9 +825,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   void dispose() {
-    _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     _textController?.dispose();
     _webViewController = null;
   }
