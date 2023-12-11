@@ -17,15 +17,14 @@ import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
     as inapp_webview_macos;
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-
-// ignore: depend_on_referenced_packages
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
+// ignore: depend_on_referenced_packages
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 /// Get nft rendering widget by type
@@ -826,9 +825,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   void dispose() {
-    _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     _textController?.dispose();
     _webViewController = null;
   }
