@@ -32,6 +32,34 @@ class SvgImage extends StatefulWidget {
     this.unsupportWidgetBuilder,
   });
 
+  String getHtml(String svgImageURL) {
+    return '''
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+          }
+          img{
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+          }
+        </style>
+      </head>
+      <body>
+        <div></div>
+        <img src="$svgImageURL" />
+      </body>
+    </html>
+    ''';
+  }
+
   @override
   State<StatefulWidget> createState() {
     return _SvgImageState();
@@ -84,28 +112,27 @@ class _SvgImageState extends State<SvgImage> {
             widget.fallbackToWebView &&
             !_webviewLoadFailed &&
             !Platform.isMacOS) {
-          return AspectRatio(
-            aspectRatio: 1,
-            child: InAppWebView(
-              key: Key(widget.url),
-              initialUrlRequest: URLRequest(url: Uri.tryParse(widget.url)),
-              initialOptions: InAppWebViewGroupOptions(
-                crossPlatform: InAppWebViewOptions(
-                  supportZoom: false,
-                  transparentBackground: true,
-                ),
-                ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+          return InAppWebView(
+            key: Key(widget.url),
+            initialUrlRequest: URLRequest(
+                url: Uri.dataFromString(widget.getHtml(widget.url),
+                    mimeType: 'text/html')),
+            initialOptions: InAppWebViewGroupOptions(
+              crossPlatform: InAppWebViewOptions(
+                supportZoom: false,
+                transparentBackground: true,
               ),
-              onWebViewCreated: (controller) {},
-              onLoadStop: (controller, uri) {
-                widget.onLoaded?.call();
-              },
-              onLoadError: (controller, uri, code, message) {
-                setState(() {
-                  _webviewLoadFailed = true;
-                });
-              },
+              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
             ),
+            onWebViewCreated: (controller) {},
+            onLoadStop: (controller, uri) {
+              widget.onLoaded?.call();
+            },
+            onLoadError: (controller, uri, code, message) {
+              setState(() {
+                _webviewLoadFailed = true;
+              });
+            },
           );
         }
         if (snapshot.error is SvgNotSupported && !widget.fallbackToWebView) {

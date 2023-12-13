@@ -342,15 +342,12 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
   void dispose() {}
 
   Widget _widgetBuilder() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: SvgImage(
-        url: previewURL,
-        fallbackToWebView: true,
-        loadingWidgetBuilder: (context) => loadingWidget,
-        onLoaded: () => onLoaded?.call(),
-        onError: () {},
-      ),
+    return SvgImage(
+      url: previewURL,
+      fallbackToWebView: true,
+      loadingWidgetBuilder: (context) => loadingWidget,
+      onLoaded: () => onLoaded?.call(),
+      onError: () {},
     );
   }
 }
@@ -791,7 +788,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             ''';
             if (Platform.isIOS) {
               javascriptString = '''
-            window.document.head.innerHTML += '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            window.document.head.innerHTML += '<meta name="viewport" content="width=device-width, initial-scale=0.5">'
                 ''';
             }
             await _webViewController?.evaluateJavascript(
