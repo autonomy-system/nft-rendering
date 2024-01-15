@@ -506,7 +506,6 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
 class VideoNFTRenderingWidget extends INFTRenderingWidget {
   String? _thumbnailURL;
   bool _playAfterInitialized = true;
-  ValueNotifier<Duration> positionListener = ValueNotifier(const Duration());
 
   VideoNFTRenderingWidget({
     RenderingWidgetBuilder? renderingWidgetBuilder,
@@ -534,7 +533,6 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         if (_playAfterInitialized) {
           _controller?.play();
         }
-        _controller?.addListener(_controlerListener);
       });
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
@@ -583,18 +581,10 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         if (_playAfterInitialized) {
           _controller?.play();
         }
-        _controller?.addListener(_controlerListener);
       });
     }, (error, stack) {
       _stateOfRenderingWidget.playingFailed();
     });
-  }
-
-  void _controlerListener() {
-    final positon = _controller?.value.position;
-    if (positon != null) {
-      positionListener.value = positon;
-    }
   }
 
   @override
@@ -632,20 +622,6 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
                 aspectRatio: _controller!.value.aspectRatio,
                 child: VideoPlayer(_controller!),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: ValueListenableBuilder<Duration>(
-                  valueListenable: positionListener,
-                  builder: (context, value, child) {
-                    return LinearProgressIndicator(
-                      value: value.inMilliseconds /
-                          _controller!.value.duration.inMilliseconds,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color.fromRGBO(0, 255, 163, 1)),
-                      backgroundColor: Colors.transparent,
-                    );
-                  }),
             ),
             Visibility(
               visible: isMute,
