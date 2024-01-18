@@ -762,14 +762,18 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           onLoadStop: (controller, uri) async {
             _stateOfRenderingWidget.previewLoaded();
             onLoaded?.call(webViewController: _webViewController);
+            String viewportContent =
+                Platform.isIOS ? 'width=device-width, initial-scale=1.0' : '';
             String javascriptString = '''
-            window.document.head.innerHTML += '<meta name="viewport">'
-            ''';
-            if (Platform.isIOS) {
-              javascriptString = '''
-            window.document.head.innerHTML += '<meta name="viewport" content="width=device-width, initial-scale=0.5">'
-                ''';
+            var viewportmeta = document.querySelector('meta[name="viewport"]');
+            if (!viewportmeta) {
+              var head = document.getElementsByTagName('head')[0];
+              var viewport = document.createElement('meta');
+              viewport.setAttribute('name', 'viewport');
+              viewport.setAttribute('content', '$viewportContent');
+              head.appendChild(viewport);
             }
+            ''';
             await _webViewController?.evaluateJavascript(
                 source: javascriptString);
 
