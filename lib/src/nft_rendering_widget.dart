@@ -23,6 +23,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
+
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -734,15 +735,13 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         InAppWebView(
           key: Key(previewURL),
           initialUrlRequest: inapp_webview.URLRequest(
-              url: Uri.tryParse(
-                  overriddenHtml != null ? 'about:blank' : previewURL)),
-          initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(
-                mediaPlaybackRequiresUserGesture: false,
-                preferredContentMode: UserPreferredContentMode.MOBILE,
-              ),
-              android: AndroidInAppWebViewOptions(),
-              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
+              url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
+          initialSettings: InAppWebViewSettings(
+            mediaPlaybackRequiresUserGesture: false,
+            useHybridComposition: true,
+            allowsInlineMediaPlayback: true,
+            preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+          ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
                 window.print = function () {
@@ -756,7 +755,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
               final uri = Uri.dataFromString(overriddenHtml!,
                   mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
               _webViewController?.loadUrl(
-                  urlRequest: inapp_webview.URLRequest(url: uri));
+                  urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
             }
           },
           onLoadStop: (controller, uri) async {
