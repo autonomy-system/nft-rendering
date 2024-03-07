@@ -852,41 +852,37 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
 
   Widget _widgetBuilder(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final heightRatio = size.height / 1080;
     return Stack(
       fit: StackFit.loose,
       children: [
-        Padding(
-          padding: EdgeInsets.only(top: heightRatio * 92),
-          child: InlineWebViewMacOs(
-            key: Key(previewURL),
-            initialUrlRequest:
-                inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
-            width: size.width,
-            height: size.height,
-            onWebViewCreated: (webViewController) async {
-              _webViewController = webViewController;
-              await _webViewController?.loadUrl(
-                  urlRequest: inapp_webview_macos.URLRequest(
-                      url: Uri.tryParse(previewURL)));
-              _stateOfRenderingWidget.previewLoaded();
-              onLoaded?.call();
-              const javascriptString = '''
+        InlineWebViewMacOs(
+          key: Key(previewURL),
+          initialUrlRequest:
+              inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
+          width: size.width,
+          height: size.height,
+          onWebViewCreated: (webViewController) async {
+            _webViewController = webViewController;
+            await _webViewController?.loadUrl(
+                urlRequest: inapp_webview_macos.URLRequest(
+                    url: Uri.tryParse(previewURL)));
+            _stateOfRenderingWidget.previewLoaded();
+            onLoaded?.call();
+            const javascriptString = '''
                   var meta = document.createElement('meta');
                               meta.setAttribute('name', 'viewport');
                               document.getElementsByTagName('head')[0].appendChild(meta);
                               document.body.style.overflow = 'hidden';
                   ''';
-              await _webViewController?.runJavascript(javascriptString);
-              _webViewController
-                  ?.runJavascript("window.dispatchEvent(new Event('resize'));");
-            },
-            onLoadStop: (controller, url) async {},
-            onDispose: () {
-              _webViewController?.runJavascript(
-                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
-            },
-          ),
+            await _webViewController?.runJavascript(javascriptString);
+            _webViewController
+                ?.runJavascript("window.dispatchEvent(new Event('resize'));");
+          },
+          onLoadStop: (controller, url) async {},
+          onDispose: () {
+            _webViewController?.runJavascript(
+                "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+          },
         ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
