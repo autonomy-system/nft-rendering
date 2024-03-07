@@ -25,7 +25,7 @@ dependencies:
   flutter_inline_webview_macos:
     git:
       url: https://github.com/autonomy-system/flutter_inline_webview_macos
-      ref: 1.0.1
+      ref: 65f1aba648425aa410c6965f89f50f0120049a50
 
   video_player_macos: ^2.0.1
   model_viewer_plus: 1.6.1
