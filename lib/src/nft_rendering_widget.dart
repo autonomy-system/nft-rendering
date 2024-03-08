@@ -898,9 +898,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   @override
-  void dispose() {
-    _webViewController?.dispose();
-  }
+  void dispose() {}
 
   @override
   Future<bool> clearPrevious() async {
