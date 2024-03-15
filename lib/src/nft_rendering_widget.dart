@@ -713,82 +713,85 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   Widget _widgetBuilder() {
-    return Stack(
-      fit: StackFit.loose,
-      children: [
-        Visibility(
-          visible: focusNode != null,
-          child: TextFormField(
-            controller: _textController,
-            focusNode: focusNode,
-            onChanged: (value) {
-              _webViewController?.evaluateJavascript(
-                  source:
-                      'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
-              _textController?.text = '';
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        fit: StackFit.loose,
+        children: [
+          Visibility(
+            visible: focusNode != null,
+            child: TextFormField(
+              controller: _textController,
+              focusNode: focusNode,
+              onChanged: (value) {
+                _webViewController?.evaluateJavascript(
+                    source:
+                        'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
+                _textController?.text = '';
+              },
+            ),
+          ),
+          InAppWebView(
+            key: Key(previewURL),
+            initialUrlRequest: inapp_webview.URLRequest(
+                url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
+            initialSettings: InAppWebViewSettings(
+              mediaPlaybackRequiresUserGesture: false,
+              useHybridComposition: true,
+              allowsInlineMediaPlayback: true,
+              preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+            ),
+            initialUserScripts: UnmodifiableListView<UserScript>([
+              UserScript(source: '''
+                  window.print = function () {
+                    console.log('Skip printing');
+                  };
+                  ''', injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)
+            ]),
+            onWebViewCreated: (controller) {
+              _webViewController = controller;
+              if (overriddenHtml != null) {
+                final uri = Uri.dataFromString(overriddenHtml!,
+                    mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
+                _webViewController?.loadUrl(
+                    urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
+              }
+            },
+            onLoadStop: (controller, uri) async {
+              _stateOfRenderingWidget.previewLoaded();
+              onLoaded?.call(webViewController: _webViewController);
+              String viewportContent =
+                  Platform.isIOS ? 'width=device-width, initial-scale=1.0' : '';
+              String javascriptString = '''
+              var viewportmeta = document.querySelector('meta[name="viewport"]');
+              if (!viewportmeta) {
+                var head = document.getElementsByTagName('head')[0];
+                var viewport = document.createElement('meta');
+                viewport.setAttribute('name', 'viewport');
+                viewport.setAttribute('content', '$viewportContent');
+                head.appendChild(viewport);
+              }
+              ''';
+              await _webViewController?.evaluateJavascript(
+                  source: javascriptString);
+
+              if (!skipViewport) {
+                await _webViewController?.evaluateJavascript(
+                    source: '''document.body.style.overflow = 'hidden';''');
+              }
+
+              if (isMute) {
+                _webViewController?.evaluateJavascript(
+                    source:
+                        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+              }
             },
           ),
-        ),
-        InAppWebView(
-          key: Key(previewURL),
-          initialUrlRequest: inapp_webview.URLRequest(
-              url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
-          initialSettings: InAppWebViewSettings(
-            mediaPlaybackRequiresUserGesture: false,
-            useHybridComposition: true,
-            allowsInlineMediaPlayback: true,
-            preferredContentMode: UserPreferredContentMode.RECOMMENDED,
-          ),
-          initialUserScripts: UnmodifiableListView<UserScript>([
-            UserScript(source: '''
-                window.print = function () {
-                  console.log('Skip printing');
-                };
-                ''', injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)
-          ]),
-          onWebViewCreated: (controller) {
-            _webViewController = controller;
-            if (overriddenHtml != null) {
-              final uri = Uri.dataFromString(overriddenHtml!,
-                  mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
-              _webViewController?.loadUrl(
-                  urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
-            }
-          },
-          onLoadStop: (controller, uri) async {
-            _stateOfRenderingWidget.previewLoaded();
-            onLoaded?.call(webViewController: _webViewController);
-            String viewportContent =
-                Platform.isIOS ? 'width=device-width, initial-scale=1.0' : '';
-            String javascriptString = '''
-            var viewportmeta = document.querySelector('meta[name="viewport"]');
-            if (!viewportmeta) {
-              var head = document.getElementsByTagName('head')[0];
-              var viewport = document.createElement('meta');
-              viewport.setAttribute('name', 'viewport');
-              viewport.setAttribute('content', '$viewportContent');
-              head.appendChild(viewport);
-            }
-            ''';
-            await _webViewController?.evaluateJavascript(
-                source: javascriptString);
-
-            if (!skipViewport) {
-              await _webViewController?.evaluateJavascript(
-                  source: '''document.body.style.overflow = 'hidden';''');
-            }
-
-            if (isMute) {
-              _webViewController?.evaluateJavascript(
-                  source:
-                      "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
-            }
-          },
-        ),
-        if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
-          loadingWidget,
+          if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
+            loadingWidget,
+          ],
         ],
-      ],
+      ),
     );
   }
 
