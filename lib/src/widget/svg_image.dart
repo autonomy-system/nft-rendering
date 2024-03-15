@@ -115,20 +115,20 @@ class _SvgImageState extends State<SvgImage> {
           return InAppWebView(
             key: Key(widget.url),
             initialUrlRequest: URLRequest(
-                url: Uri.dataFromString(widget.getHtml(widget.url),
-                    mimeType: 'text/html')),
-            initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(
-                supportZoom: false,
-                transparentBackground: true,
-              ),
-              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+                url: WebUri.uri(Uri.dataFromString(widget.getHtml(widget.url),
+                    mimeType: 'text/html'))),
+            initialSettings: InAppWebViewSettings(
+              mediaPlaybackRequiresUserGesture: false,
+              useHybridComposition: true,
+              allowsInlineMediaPlayback: true,
+              supportZoom: false,
+              transparentBackground: true,
             ),
             onWebViewCreated: (controller) {},
             onLoadStop: (controller, uri) {
               widget.onLoaded?.call();
             },
-            onLoadError: (controller, uri, code, message) {
+            onReceivedError: (controller, request, error) {
               setState(() {
                 _webviewLoadFailed = true;
               });

@@ -23,6 +23,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
+
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -731,15 +732,13 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         InAppWebView(
           key: Key(previewURL),
           initialUrlRequest: inapp_webview.URLRequest(
-              url: Uri.tryParse(
-                  overriddenHtml != null ? 'about:blank' : previewURL)),
-          initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(
-                mediaPlaybackRequiresUserGesture: false,
-                preferredContentMode: UserPreferredContentMode.MOBILE,
-              ),
-              android: AndroidInAppWebViewOptions(),
-              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
+              url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
+          initialSettings: InAppWebViewSettings(
+            mediaPlaybackRequiresUserGesture: false,
+            useHybridComposition: true,
+            allowsInlineMediaPlayback: true,
+            preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+          ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
                 window.print = function () {
@@ -753,7 +752,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
               final uri = Uri.dataFromString(overriddenHtml!,
                   mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
               _webViewController?.loadUrl(
-                  urlRequest: inapp_webview.URLRequest(url: uri));
+                  urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
             }
           },
           onLoadStop: (controller, uri) async {
@@ -853,41 +852,37 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
 
   Widget _widgetBuilder(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final heightRatio = size.height / 1080;
     return Stack(
       fit: StackFit.loose,
       children: [
-        Padding(
-          padding: EdgeInsets.only(top: heightRatio * 92),
-          child: InlineWebViewMacOs(
-            key: Key(previewURL),
-            initialUrlRequest:
-                inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
-            width: size.width,
-            height: size.height,
-            onWebViewCreated: (webViewController) async {
-              _webViewController = webViewController;
-              await _webViewController?.loadUrl(
-                  urlRequest: inapp_webview_macos.URLRequest(
-                      url: Uri.tryParse(previewURL)));
-              _stateOfRenderingWidget.previewLoaded();
-              onLoaded?.call();
-              const javascriptString = '''
+        InlineWebViewMacOs(
+          key: Key(previewURL),
+          initialUrlRequest:
+              inapp_webview_macos.URLRequest(url: Uri.tryParse(previewURL)),
+          width: size.width,
+          height: size.height,
+          onWebViewCreated: (webViewController) async {
+            _webViewController = webViewController;
+            await _webViewController?.loadUrl(
+                urlRequest: inapp_webview_macos.URLRequest(
+                    url: Uri.tryParse(previewURL)));
+            _stateOfRenderingWidget.previewLoaded();
+            onLoaded?.call();
+            const javascriptString = '''
                   var meta = document.createElement('meta');
                               meta.setAttribute('name', 'viewport');
                               document.getElementsByTagName('head')[0].appendChild(meta);
                               document.body.style.overflow = 'hidden';
                   ''';
-              await _webViewController?.runJavascript(javascriptString);
-              _webViewController
-                  ?.runJavascript("window.dispatchEvent(new Event('resize'));");
-            },
-            onLoadStop: (controller, url) async {},
-            onDispose: () {
-              _webViewController?.runJavascript(
-                  "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
-            },
-          ),
+            await _webViewController?.runJavascript(javascriptString);
+            _webViewController
+                ?.runJavascript("window.dispatchEvent(new Event('resize'));");
+          },
+          onLoadStop: (controller, url) async {},
+          onDispose: () {
+            _webViewController?.runJavascript(
+                "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+          },
         ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
