@@ -10,12 +10,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
     as inapp_webview;
-import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
     as inapp_webview_macos;
+import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
@@ -693,6 +693,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           renderingWidgetBuilder: renderingWidgetBuilder,
         );
 
+  ValueNotifier<bool> isPausing = ValueNotifier(false);
+
   InAppWebViewController? _webViewController;
   TextEditingController? _textController;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -702,6 +704,28 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   void setRenderWidgetBuilder(RenderingWidgetBuilder renderingWidgetBuilder) {
     super.setRenderWidgetBuilder(renderingWidgetBuilder);
     _textController = TextEditingController();
+  }
+
+  Future<void> onPause() async {
+    await _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+  }
+
+  Future<void> onResume() async {
+    await _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+  }
+
+  @override
+  Future<void> pauseOrResume() async {
+    if (isPausing.value) {
+      await onResume();
+    } else {
+      await onPause();
+    }
+    isPausing.value = !isPausing.value;
   }
 
   @override
@@ -792,6 +816,26 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
         ],
+        ValueListenableBuilder<bool>(
+            valueListenable: isPausing,
+            builder: (context, value, child) {
+              if (value) {
+                return const Column(
+                  children: [
+                    Center(
+                      child: Icon(
+                        Icons.play_arrow,
+                        size: 50,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text("Artwork is pausing... Tap to resume.")
+                  ],
+                );
+              } else {
+                return const SizedBox();
+              }
+            }),
       ],
     );
   }
