@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -281,24 +280,15 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
+    onLoaded?.call();
     return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
-    return CachedNetworkImage(
-      imageUrl: previewURL,
-      imageBuilder: (context, imageProvider) {
-        onLoaded?.call();
-        return Image(
-          image: imageProvider,
-        );
-      },
-      cacheManager: cacheManager,
-      placeholder: (context, url) => loadingWidget,
-      placeholderFadeInDuration: const Duration(milliseconds: 300),
-      fadeOutDuration: const Duration(milliseconds: 0),
-      errorWidget: (context, url, error) {
-        onLoaded?.call();
+    return Image.network(
+     previewURL,
+      loadingBuilder: (context, child, loadingProgress) => loadingWidget,
+      errorBuilder: (context, url, error) {
         return Center(
           child: errorWidget,
         );
@@ -348,6 +338,7 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
       fallbackToWebView: true,
       loadingWidgetBuilder: (context) => loadingWidget,
       onLoaded: () => onLoaded?.call(),
+      cacheManager: cacheManager,
       onError: () {},
     );
   }
@@ -378,12 +369,10 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   void dispose() {}
 
   Widget _widgetBuilder() {
-    return CachedNetworkImage(
-      imageUrl: previewURL,
-      placeholder: (context, url) => loadingWidget,
-      placeholderFadeInDuration: const Duration(milliseconds: 300),
-      fadeOutDuration: const Duration(milliseconds: 0),
-      errorWidget: (context, url, error) => Center(
+    return Image.network(
+      previewURL,
+      loadingBuilder: (context, child, imageChuckEvent) => loadingWidget,
+      errorBuilder: (context, url, error) => Center(
         child: errorWidget,
       ),
       fit: BoxFit.cover,
@@ -477,13 +466,10 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
-          child: CachedNetworkImage(
-            imageUrl: _thumbnailURL ?? "",
-            cacheManager: cacheManager,
-            placeholder: (context, url) => loadingWidget,
-            placeholderFadeInDuration: const Duration(milliseconds: 300),
-            fadeOutDuration: const Duration(milliseconds: 0),
-            errorWidget: (context, url, error) => Center(
+          child: Image.network(
+            _thumbnailURL ?? "",
+            loadingBuilder: (context, child, _) => loadingWidget,
+            errorBuilder: (context, url, error) => Center(
               child: errorWidget,
             ),
             fit: BoxFit.contain,
@@ -601,16 +587,10 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     if (_controller != null) {
       if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
-        return CachedNetworkImage(
-          imageUrl: _thumbnailURL!,
-          imageBuilder: (context, imageProvider) => Image(
-            image: imageProvider,
-          ),
-          cacheManager: cacheManager,
-          placeholder: (context, url) => loadingWidget,
-          placeholderFadeInDuration: const Duration(milliseconds: 300),
-          fadeOutDuration: const Duration(milliseconds: 0),
-          errorWidget: (context, url, error) => Center(
+        return Image.network(
+          _thumbnailURL!,
+          loadingBuilder: (context, child, _) => loadingWidget,
+          errorBuilder: (context, url, error) => Center(
             child: errorWidget,
           ),
           fit: BoxFit.cover,
