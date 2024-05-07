@@ -291,7 +291,9 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
         if (loadingProgress == null) {
           return child;
         }
-        return loadingWidget;
+        return Opacity(
+            opacity: getOpacityFromLoadingProgress(loadingProgress),
+            child: loadingWidget);
       },
       errorBuilder: (context, url, error) {
         return Center(
@@ -380,7 +382,9 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
         if (loadingProgress == null) {
           return child;
         }
-        return loadingWidget;
+        return Opacity(
+            opacity: getOpacityFromLoadingProgress(loadingProgress),
+            child: loadingWidget);
       },
       errorBuilder: (context, url, error) => Center(
         child: errorWidget,
@@ -482,7 +486,9 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
               if (loadingProgress == null) {
                 return child;
               }
-              return loadingWidget;
+              return Opacity(
+                  opacity: getOpacityFromLoadingProgress(loadingProgress),
+                  child: loadingWidget);
             },
             errorBuilder: (context, url, error) => Center(
               child: errorWidget,
@@ -608,7 +614,9 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
             if (loadingProgress == null) {
               return child;
             }
-            return loadingWidget;
+            return Opacity(
+                opacity: getOpacityFromLoadingProgress(loadingProgress),
+                child: loadingWidget);
           },
           errorBuilder: (context, url, error) => Center(
             child: errorWidget,
@@ -1131,4 +1139,18 @@ class RectangleClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+const fadeThreshold = 0.6;
+
+double getOpacityFromLoadingProgress(ImageChunkEvent loadingProgress) {
+  if (loadingProgress.expectedTotalBytes == null) return 1.0;
+  final total = loadingProgress.expectedTotalBytes!.toDouble();
+  final loaded = loadingProgress.cumulativeBytesLoaded.toDouble();
+  final progress = loaded / total;
+  if (progress < fadeThreshold) {
+    return 1.0;
+  } else {
+    return 1.0 - ((progress - fadeThreshold) / (1 - fadeThreshold));
+  }
 }
