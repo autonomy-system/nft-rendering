@@ -286,8 +286,13 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   Widget _widgetBuilder() {
     return Image.network(
-     previewURL,
-      loadingBuilder: (context, child, loadingProgress) => loadingWidget,
+      previewURL,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return loadingWidget;
+      },
       errorBuilder: (context, url, error) {
         return Center(
           child: errorWidget,
@@ -371,7 +376,12 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     return Image.network(
       previewURL,
-      loadingBuilder: (context, child, imageChuckEvent) => loadingWidget,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return loadingWidget;
+      },
       errorBuilder: (context, url, error) => Center(
         child: errorWidget,
       ),
@@ -468,7 +478,12 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
         Flexible(
           child: Image.network(
             _thumbnailURL ?? "",
-            loadingBuilder: (context, child, _) => loadingWidget,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return loadingWidget;
+            },
             errorBuilder: (context, url, error) => Center(
               child: errorWidget,
             ),
@@ -589,7 +604,12 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
         return Image.network(
           _thumbnailURL!,
-          loadingBuilder: (context, child, _) => loadingWidget,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) {
+              return child;
+            }
+            return loadingWidget;
+          },
           errorBuilder: (context, url, error) => Center(
             child: errorWidget,
           ),
