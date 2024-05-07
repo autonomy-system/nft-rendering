@@ -261,6 +261,31 @@ abstract class INFTRenderingWidget {
 
   Widget build(BuildContext context) => const SizedBox();
 
+  static const fadeThreshold = 0.7;
+
+  Widget _loadingBuilder(
+      BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+    if (loadingProgress == null) {
+      return child;
+    }
+    return Opacity(
+      opacity: _getOpacityFromLoadingProgress(loadingProgress),
+      child: loadingWidget,
+    );
+  }
+
+  double _getOpacityFromLoadingProgress(ImageChunkEvent loadingProgress) {
+    if (loadingProgress.expectedTotalBytes == null) return 1.0;
+    final total = loadingProgress.expectedTotalBytes!.toDouble();
+    final loaded = loadingProgress.cumulativeBytesLoaded.toDouble();
+    final progress = loaded / total;
+    if (progress < fadeThreshold) {
+      return 1.0;
+    } else {
+      return 1.0 - ((progress - fadeThreshold) / (1 - fadeThreshold));
+    }
+  }
+
   void dispose();
 
   void didPopNext();
@@ -287,14 +312,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     return Image.network(
       previewURL,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
-        return Opacity(
-            opacity: getOpacityFromLoadingProgress(loadingProgress),
-            child: loadingWidget);
-      },
+      loadingBuilder: _loadingBuilder,
       errorBuilder: (context, url, error) {
         return Center(
           child: errorWidget,
@@ -378,14 +396,7 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     return Image.network(
       previewURL,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
-        return Opacity(
-            opacity: getOpacityFromLoadingProgress(loadingProgress),
-            child: loadingWidget);
-      },
+      loadingBuilder: _loadingBuilder,
       errorBuilder: (context, url, error) => Center(
         child: errorWidget,
       ),
@@ -482,14 +493,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
         Flexible(
           child: Image.network(
             _thumbnailURL ?? "",
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) {
-                return child;
-              }
-              return Opacity(
-                  opacity: getOpacityFromLoadingProgress(loadingProgress),
-                  child: loadingWidget);
-            },
+            loadingBuilder: _loadingBuilder,
             errorBuilder: (context, url, error) => Center(
               child: errorWidget,
             ),
@@ -610,14 +614,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
       if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
         return Image.network(
           _thumbnailURL!,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) {
-              return child;
-            }
-            return Opacity(
-                opacity: getOpacityFromLoadingProgress(loadingProgress),
-                child: loadingWidget);
-          },
+          loadingBuilder: _loadingBuilder,
           errorBuilder: (context, url, error) => Center(
             child: errorWidget,
           ),
@@ -1141,16 +1138,4 @@ class RectangleClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
-const fadeThreshold = 0.6;
 
-double getOpacityFromLoadingProgress(ImageChunkEvent loadingProgress) {
-  if (loadingProgress.expectedTotalBytes == null) return 1.0;
-  final total = loadingProgress.expectedTotalBytes!.toDouble();
-  final loaded = loadingProgress.cumulativeBytesLoaded.toDouble();
-  final progress = loaded / total;
-  if (progress < fadeThreshold) {
-    return 1.0;
-  } else {
-    return 1.0 - ((progress - fadeThreshold) / (1 - fadeThreshold));
-  }
-}
