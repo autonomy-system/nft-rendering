@@ -8,7 +8,6 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
     as inapp_webview;
@@ -179,7 +178,6 @@ class RenderingWidgetBuilder {
   late Widget? noPreviewUrlWidget;
   final String? thumbnailURL;
   late String? previewURL;
-  late BaseCacheManager? cacheManager;
   late dynamic controller;
   final int? latestPosition;
   final String? overriddenHtml;
@@ -195,7 +193,6 @@ class RenderingWidgetBuilder {
     this.noPreviewUrlWidget,
     this.thumbnailURL,
     this.previewURL,
-    this.cacheManager,
     this.controller,
     this.onLoaded,
     this.onDispose,
@@ -234,7 +231,6 @@ abstract class INFTRenderingWidget {
     noPreviewUrlWidget =
         renderingWidgetBuilder.noPreviewUrlWidget ?? const NoPreviewUrlWidget();
     previewURL = renderingWidgetBuilder.previewURL ?? "";
-    cacheManager = renderingWidgetBuilder.cacheManager;
     controller = renderingWidgetBuilder.controller;
     onLoaded = renderingWidgetBuilder.onLoaded;
     onDispose = renderingWidgetBuilder.onDispose;
@@ -253,7 +249,6 @@ abstract class INFTRenderingWidget {
   Widget noPreviewUrlWidget = const NoPreviewUrlWidget();
   String previewURL = "";
   dynamic controller;
-  BaseCacheManager? cacheManager;
   int? latestPosition;
   String? overriddenHtml;
   bool isMute = false;
@@ -363,7 +358,6 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
       fallbackToWebView: true,
       loadingWidgetBuilder: (context) => loadingWidget,
       onLoaded: () => onLoaded?.call(),
-      cacheManager: cacheManager,
       onError: () {},
     );
   }
