@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
     as inapp_webview;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -23,6 +21,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
+
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -179,7 +178,6 @@ class RenderingWidgetBuilder {
   late Widget? noPreviewUrlWidget;
   final String? thumbnailURL;
   late String? previewURL;
-  late BaseCacheManager? cacheManager;
   late dynamic controller;
   final int? latestPosition;
   final String? overriddenHtml;
@@ -195,7 +193,6 @@ class RenderingWidgetBuilder {
     this.noPreviewUrlWidget,
     this.thumbnailURL,
     this.previewURL,
-    this.cacheManager,
     this.controller,
     this.onLoaded,
     this.onDispose,
@@ -234,7 +231,6 @@ abstract class INFTRenderingWidget {
     noPreviewUrlWidget =
         renderingWidgetBuilder.noPreviewUrlWidget ?? const NoPreviewUrlWidget();
     previewURL = renderingWidgetBuilder.previewURL ?? "";
-    cacheManager = renderingWidgetBuilder.cacheManager;
     controller = renderingWidgetBuilder.controller;
     onLoaded = renderingWidgetBuilder.onLoaded;
     onDispose = renderingWidgetBuilder.onDispose;
@@ -253,13 +249,37 @@ abstract class INFTRenderingWidget {
   Widget noPreviewUrlWidget = const NoPreviewUrlWidget();
   String previewURL = "";
   dynamic controller;
-  BaseCacheManager? cacheManager;
   int? latestPosition;
   String? overriddenHtml;
   bool isMute = false;
   bool skipViewport = false;
 
   Widget build(BuildContext context) => const SizedBox();
+
+  static const fadeThreshold = 0.7;
+
+  Widget _loadingBuilder(
+      BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+    if (loadingProgress == null) {
+      return child;
+    }
+    return Opacity(
+      opacity: _getOpacityFromLoadingProgress(loadingProgress),
+      child: loadingWidget,
+    );
+  }
+
+  double _getOpacityFromLoadingProgress(ImageChunkEvent loadingProgress) {
+    if (loadingProgress.expectedTotalBytes == null) return 1.0;
+    final total = loadingProgress.expectedTotalBytes!.toDouble();
+    final loaded = loadingProgress.cumulativeBytesLoaded.toDouble();
+    final progress = loaded / total;
+    if (progress < fadeThreshold) {
+      return 1.0;
+    } else {
+      return 1.0 - ((progress - fadeThreshold) / (1 - fadeThreshold));
+    }
+  }
 
   void dispose();
 
@@ -280,24 +300,15 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
+    onLoaded?.call();
     return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
   Widget _widgetBuilder() {
-    return CachedNetworkImage(
-      imageUrl: previewURL,
-      imageBuilder: (context, imageProvider) {
-        onLoaded?.call();
-        return Image(
-          image: imageProvider,
-        );
-      },
-      cacheManager: cacheManager,
-      placeholder: (context, url) => loadingWidget,
-      placeholderFadeInDuration: const Duration(milliseconds: 300),
-      fadeOutDuration: const Duration(milliseconds: 0),
-      errorWidget: (context, url, error) {
-        onLoaded?.call();
+    return Image.network(
+      previewURL,
+      loadingBuilder: _loadingBuilder,
+      errorBuilder: (context, url, error) {
         return Center(
           child: errorWidget,
         );
@@ -380,12 +391,10 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
   void dispose() {}
 
   Widget _widgetBuilder() {
-    return CachedNetworkImage(
-      imageUrl: previewURL,
-      placeholder: (context, url) => loadingWidget,
-      placeholderFadeInDuration: const Duration(milliseconds: 300),
-      fadeOutDuration: const Duration(milliseconds: 0),
-      errorWidget: (context, url, error) => Center(
+    return Image.network(
+      previewURL,
+      loadingBuilder: _loadingBuilder,
+      errorBuilder: (context, url, error) => Center(
         child: errorWidget,
       ),
       fit: BoxFit.cover,
@@ -479,13 +488,10 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
-          child: CachedNetworkImage(
-            imageUrl: _thumbnailURL ?? "",
-            cacheManager: cacheManager,
-            placeholder: (context, url) => loadingWidget,
-            placeholderFadeInDuration: const Duration(milliseconds: 300),
-            fadeOutDuration: const Duration(milliseconds: 0),
-            errorWidget: (context, url, error) => Center(
+          child: Image.network(
+            _thumbnailURL ?? "",
+            loadingBuilder: _loadingBuilder,
+            errorBuilder: (context, url, error) => Center(
               child: errorWidget,
             ),
             fit: BoxFit.contain,
@@ -603,16 +609,10 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
   Widget _widgetBuilder() {
     if (_controller != null) {
       if (_stateOfRenderingWidget.isPlayingFailed && _thumbnailURL != null) {
-        return CachedNetworkImage(
-          imageUrl: _thumbnailURL!,
-          imageBuilder: (context, imageProvider) => Image(
-            image: imageProvider,
-          ),
-          cacheManager: cacheManager,
-          placeholder: (context, url) => loadingWidget,
-          placeholderFadeInDuration: const Duration(milliseconds: 300),
-          fadeOutDuration: const Duration(milliseconds: 0),
-          errorWidget: (context, url, error) => Center(
+        return Image.network(
+          _thumbnailURL!,
+          loadingBuilder: _loadingBuilder,
+          errorBuilder: (context, url, error) => Center(
             child: errorWidget,
           ),
           fit: BoxFit.cover,
@@ -758,15 +758,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         InAppWebView(
           key: Key(previewURL),
           initialUrlRequest: inapp_webview.URLRequest(
-              url: Uri.tryParse(
-                  overriddenHtml != null ? 'about:blank' : previewURL)),
-          initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(
-                mediaPlaybackRequiresUserGesture: false,
-                preferredContentMode: UserPreferredContentMode.MOBILE,
-              ),
-              android: AndroidInAppWebViewOptions(),
-              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
+              url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
+          initialSettings: InAppWebViewSettings(
+              mediaPlaybackRequiresUserGesture: false,
+              preferredContentMode: UserPreferredContentMode.MOBILE,
+              allowsInlineMediaPlayback: true),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
                 window.print = function () {
@@ -777,10 +773,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           onWebViewCreated: (controller) {
             _webViewController = controller;
             if (overriddenHtml != null) {
-              final uri = Uri.dataFromString(overriddenHtml!,
-                  mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
+              final uri = WebUri(overriddenHtml!);
               _webViewController?.loadUrl(
-                  urlRequest: inapp_webview.URLRequest(url: uri));
+                  urlRequest: inapp_webview.URLRequest(
+                url: uri,
+              ));
             }
           },
           onLoadStop: (controller, uri) async {
