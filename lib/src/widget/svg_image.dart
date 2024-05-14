@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +12,6 @@ import 'package:xml/xml.dart';
 class SvgImage extends StatefulWidget {
   final String url;
   final bool fallbackToWebView;
-  final BaseCacheManager? cacheManager;
   final WidgetBuilder? loadingWidgetBuilder;
   final WidgetBuilder? errorWidgetBuilder;
   final WidgetBuilder? unsupportWidgetBuilder;
@@ -24,7 +22,6 @@ class SvgImage extends StatefulWidget {
     super.key,
     required this.url,
     this.fallbackToWebView = false,
-    this.cacheManager,
     this.loadingWidgetBuilder,
     this.errorWidgetBuilder,
     this.onLoaded,
@@ -47,14 +44,9 @@ class _SvgImageState extends State<SvgImage> {
     Future(() async {
       String? svg;
       try {
-        if (widget.cacheManager != null) {
-          final cachedFile =
-              await widget.cacheManager?.getSingleFile(widget.url);
-          svg = await cachedFile?.readAsString() ?? "";
-        } else {
-          final resp = await http.get(Uri.parse(widget.url));
-          svg = resp.body;
-        }
+        final resp = await http.get(Uri.parse(widget.url));
+        svg = resp.body;
+
         if (widget.fallbackToWebView) {
           svg = await _fixSvgSize(
             svgData: svg,
@@ -88,19 +80,18 @@ class _SvgImageState extends State<SvgImage> {
             aspectRatio: 1,
             child: InAppWebView(
               key: Key(widget.url),
-              initialUrlRequest: URLRequest(url: Uri.tryParse(widget.url)),
-              initialOptions: InAppWebViewGroupOptions(
-                crossPlatform: InAppWebViewOptions(
-                  supportZoom: false,
-                  transparentBackground: true,
-                ),
-                ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+              initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+              initialSettings: InAppWebViewSettings(
+                supportZoom: false,
+                transparentBackground: true,
+                allowsInlineMediaPlayback: true,
+                useHybridComposition: true,
               ),
               onWebViewCreated: (controller) {},
               onLoadStop: (controller, uri) {
                 widget.onLoaded?.call();
               },
-              onLoadError: (controller, uri, code, message) {
+              onReceivedError: (controller, request, error) {
                 setState(() {
                   _webviewLoadFailed = true;
                 });
