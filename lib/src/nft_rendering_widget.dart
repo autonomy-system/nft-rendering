@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
@@ -760,9 +761,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           initialUrlRequest: inapp_webview.URLRequest(
               url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
           initialSettings: InAppWebViewSettings(
-              mediaPlaybackRequiresUserGesture: false,
-              preferredContentMode: UserPreferredContentMode.MOBILE,
-              allowsInlineMediaPlayback: true),
+            mediaPlaybackRequiresUserGesture: false,
+            useHybridComposition: true,
+            preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+            allowsInlineMediaPlayback: true,
+          ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
                 window.print = function () {
@@ -773,10 +776,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           onWebViewCreated: (controller) {
             _webViewController = controller;
             if (overriddenHtml != null) {
-              final uri = WebUri(overriddenHtml!);
+              final uri = Uri.dataFromString(overriddenHtml!,
+                  mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
               _webViewController?.loadUrl(
                   urlRequest: inapp_webview.URLRequest(
-                url: uri,
+                url: WebUri.uri(uri),
               ));
             }
           },
