@@ -8,12 +8,12 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
     as inapp_webview;
-import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
     as inapp_webview_macos;
+import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
@@ -21,7 +21,6 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
-
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -186,6 +185,7 @@ class RenderingWidgetBuilder {
   Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
+  bool autoPlay;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -201,6 +201,7 @@ class RenderingWidgetBuilder {
     this.isMute = false,
     this.focusNode,
     this.skipViewport = false,
+    this.autoPlay = false,
   });
 }
 
@@ -221,6 +222,7 @@ abstract class INFTRenderingWidget {
       isMute = renderingWidgetBuilder.isMute;
       skipViewport = renderingWidgetBuilder.skipViewport;
       focusNode = renderingWidgetBuilder.focusNode;
+      autoPlay = renderingWidgetBuilder.autoPlay;
     }
   }
 
@@ -239,6 +241,7 @@ abstract class INFTRenderingWidget {
     isMute = renderingWidgetBuilder.isMute;
     skipViewport = renderingWidgetBuilder.skipViewport;
     focusNode = renderingWidgetBuilder.focusNode;
+    autoPlay = renderingWidgetBuilder.autoPlay;
   }
 
   Function({int? time, InAppWebViewController? webViewController})? onLoaded;
@@ -253,6 +256,7 @@ abstract class INFTRenderingWidget {
   String? overriddenHtml;
   bool isMute = false;
   bool skipViewport = false;
+  bool autoPlay = false;
 
   Widget build(BuildContext context) => const SizedBox();
 
@@ -778,9 +782,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             }
 
             if (isMute) {
-              _webViewController?.evaluateJavascript(
-                  source:
-                      "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+              _muteVideoOrAudio();
+            }
+
+            if (autoPlay) {
+              _playVideoOrAudio();
             }
           },
         ),
@@ -791,11 +797,27 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
     );
   }
 
-  @override
-  void didPopNext() {
+  void _playVideoOrAudio() {
     _webViewController?.evaluateJavascript(
         source:
             "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+  }
+
+  void _pauseVideoOrAudio() {
+    _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+  }
+
+  void _muteVideoOrAudio() {
+    _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+  }
+
+  @override
+  void didPopNext() {
+    _playVideoOrAudio();
   }
 
   @override
@@ -806,9 +828,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Future<bool> clearPrevious() async {
-    await _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+    _pauseVideoOrAudio();
     return true;
   }
 
@@ -877,10 +897,11 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
             _webViewController
                 ?.runJavascript("window.dispatchEvent(new Event('resize'));");
           },
-          onLoadStop: (controller, url) async {},
+          onLoadStop: (controller, url) async {
+            _muteVideoOrAudio();
+          },
           onDispose: () {
-            _webViewController?.runJavascript(
-                "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+            _pauseVideoOrAudio();
           },
         ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
@@ -890,10 +911,24 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
     );
   }
 
+  void _playVideoOrAudio() {
+    _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+  }
+
+  void _pauseVideoOrAudio() {
+    _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+  }
+
+  void _muteVideoOrAudio() {
+    _webViewController?.runJavascript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+  }
+
   @override
   void didPopNext() {
-    _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); }");
+    _playVideoOrAudio();
   }
 
   @override
@@ -901,8 +936,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Future<bool> clearPrevious() async {
-    await _webViewController?.runJavascript(
-        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); }");
+    _pauseVideoOrAudio();
     return true;
   }
 
