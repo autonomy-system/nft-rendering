@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/Users/lephuoc/Documents/development/flutter"
-export "FLUTTER_APPLICATION_PATH=/Users/lephuoc/Desktop/bitmark/nft-rendering/example"
+export "FLUTTER_ROOT=/Users/nguyenphuocsang/flutter"
+export "FLUTTER_APPLICATION_PATH=/Users/nguyenphuocsang/Bitmark Inc./nft-rendering/example"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"

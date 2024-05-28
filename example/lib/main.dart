@@ -26,7 +26,8 @@ List<String> _typeValues = [
   "svg",
   "video",
   "application/pdf",
-  "webview"
+  "webview",
+  "gif",
 ];
 
 class MyHomePage extends StatefulWidget {
