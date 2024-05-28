@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/lephuoc/Documents/development/flutter
-FLUTTER_APPLICATION_PATH=/Users/lephuoc/Desktop/bitmark/nft-rendering/example
+FLUTTER_ROOT=/Users/nguyenphuocsang/flutter
+FLUTTER_APPLICATION_PATH=/Users/nguyenphuocsang/Bitmark Inc./nft-rendering/example
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib/main.dart
 FLUTTER_BUILD_DIR=build
