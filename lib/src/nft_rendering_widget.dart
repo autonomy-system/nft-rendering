@@ -157,17 +157,23 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
     case RenderingType.pdf:
       return PDFNFTRenderingWidget();
     case RenderingType.modelViewer:
-      return Platform.isMacOS
-          ? WebviewMacOSNFTRenderingWidget()
-          : ModelViewerRenderingWidget();
+      return kIsWeb
+          ? ModelViewerRenderingWidget()
+          : Platform.isMacOS
+              ? WebviewMacOSNFTRenderingWidget()
+              : ModelViewerRenderingWidget();
     case RenderingType.webview:
-      return Platform.isMacOS
-          ? WebviewMacOSNFTRenderingWidget()
-          : WebviewNFTRenderingWidget();
+      return kIsWeb
+          ? WebviewNFTRenderingWidget()
+          : Platform.isMacOS
+              ? WebviewMacOSNFTRenderingWidget()
+              : WebviewNFTRenderingWidget();
     default:
-      return Platform.isMacOS
-          ? WebviewMacOSNFTRenderingWidget()
-          : WebviewNFTRenderingWidget();
+      return kIsWeb
+          ? WebviewNFTRenderingWidget()
+          : Platform.isMacOS
+              ? WebviewMacOSNFTRenderingWidget()
+              : WebviewNFTRenderingWidget();
   }
 }
 
