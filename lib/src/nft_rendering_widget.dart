@@ -802,10 +802,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             await _webViewController?.evaluateJavascript(
                 source: javascriptString);
 
-            // set background color to black
+            // check background color is set
             await _webViewController?.evaluateJavascript(
-                source:
-                    "document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';");
+                source: '''if (document.body.style.backgroundColor == '') {
+                  document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';
+                }''');
 
             if (!skipViewport) {
               await _webViewController?.evaluateJavascript(
