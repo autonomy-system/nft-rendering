@@ -695,6 +695,8 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
           renderingWidgetBuilder: renderingWidgetBuilder,
         );
 
+  ValueNotifier<bool> isPausing = ValueNotifier(false);
+
   InAppWebViewController? _webViewController;
   TextEditingController? _textController;
   final backgroundColor = Colors.black;
@@ -705,6 +707,28 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   void setRenderWidgetBuilder(RenderingWidgetBuilder renderingWidgetBuilder) {
     super.setRenderWidgetBuilder(renderingWidgetBuilder);
     _textController = TextEditingController();
+  }
+
+  Future<void> onPause() async {
+    await _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+  }
+
+  Future<void> onResume() async {
+    await _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+  }
+
+  @override
+  Future<void> pauseOrResume() async {
+    if (isPausing.value) {
+      await onResume();
+    } else {
+      await onPause();
+    }
+    isPausing.value = !isPausing.value;
   }
 
   @override
@@ -798,6 +822,26 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
         ],
+        ValueListenableBuilder<bool>(
+            valueListenable: isPausing,
+            builder: (context, value, child) {
+              if (value) {
+                return const Column(
+                  children: [
+                    Center(
+                      child: Icon(
+                        Icons.play_arrow,
+                        size: 50,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text("Artwork is pausing... Tap to resume.")
+                  ],
+                );
+              } else {
+                return const SizedBox();
+              }
+            }),
       ],
     );
   }
