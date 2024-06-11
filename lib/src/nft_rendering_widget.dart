@@ -8,12 +8,12 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
     as inapp_webview;
-import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
     as inapp_webview_macos;
+import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
@@ -21,7 +21,6 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
-
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -698,6 +697,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   InAppWebViewController? _webViewController;
   TextEditingController? _textController;
+  final backgroundColor = Colors.black;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
   late Key key;
 
@@ -777,6 +777,11 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             ''';
             await _webViewController?.evaluateJavascript(
                 source: javascriptString);
+
+            // set background color to black
+            await _webViewController?.evaluateJavascript(
+                source:
+                    "document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';");
 
             if (!skipViewport) {
               await _webViewController?.evaluateJavascript(
