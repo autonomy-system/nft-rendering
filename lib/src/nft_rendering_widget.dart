@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
@@ -8,9 +6,9 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart'
-    as inapp_webview;
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+// import 'package:flutter_inappwebview/flutter_inappwebview.dart'
+//     as inapp_webview;
+// import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart'
     as inapp_webview_macos;
 import 'package:flutter_inline_webview_macos/flutter_inline_webview_macos.dart';
@@ -188,7 +186,7 @@ class RenderingWidgetBuilder {
   final String? overriddenHtml;
   final bool isMute;
   final bool skipViewport;
-  Function({int? time, InAppWebViewController? webViewController})? onLoaded;
+  // Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
 
@@ -199,7 +197,7 @@ class RenderingWidgetBuilder {
     this.thumbnailURL,
     this.previewURL,
     this.controller,
-    this.onLoaded,
+    // this.onLoaded,
     this.onDispose,
     this.latestPosition,
     this.overriddenHtml,
@@ -219,7 +217,7 @@ abstract class INFTRenderingWidget {
           renderingWidgetBuilder.errorWidget ?? const NFTErrorWidget();
       previewURL = renderingWidgetBuilder.previewURL ?? "";
       controller = renderingWidgetBuilder.controller;
-      onLoaded = renderingWidgetBuilder.onLoaded;
+      // onLoaded = renderingWidgetBuilder.onLoaded;
       onDispose = renderingWidgetBuilder.onDispose;
       latestPosition = renderingWidgetBuilder.latestPosition;
       overriddenHtml = renderingWidgetBuilder.overriddenHtml;
@@ -237,7 +235,7 @@ abstract class INFTRenderingWidget {
         renderingWidgetBuilder.noPreviewUrlWidget ?? const NoPreviewUrlWidget();
     previewURL = renderingWidgetBuilder.previewURL ?? "";
     controller = renderingWidgetBuilder.controller;
-    onLoaded = renderingWidgetBuilder.onLoaded;
+    // onLoaded = renderingWidgetBuilder.onLoaded;
     onDispose = renderingWidgetBuilder.onDispose;
     latestPosition = renderingWidgetBuilder.latestPosition;
     overriddenHtml = renderingWidgetBuilder.overriddenHtml;
@@ -246,7 +244,7 @@ abstract class INFTRenderingWidget {
     focusNode = renderingWidgetBuilder.focusNode;
   }
 
-  Function({int? time, InAppWebViewController? webViewController})? onLoaded;
+  // Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
   Widget loadingWidget = const NFTLoadingWidget();
@@ -305,7 +303,7 @@ class ImageNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    onLoaded?.call();
+    // onLoaded?.call();
     return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
@@ -362,7 +360,7 @@ class SVGNFTRenderingWidget extends INFTRenderingWidget {
       url: previewURL,
       fallbackToWebView: true,
       loadingWidgetBuilder: (context) => loadingWidget,
-      onLoaded: () => onLoaded?.call(),
+      // onLoaded: () => onLoaded?.call(),
       onError: () {},
     );
   }
@@ -377,7 +375,7 @@ class GifNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   Widget build(BuildContext context) {
-    onLoaded?.call();
+    // onLoaded?.call();
     return previewURL.isEmpty ? noPreviewUrlWidget : _widgetBuilder();
   }
 
@@ -455,7 +453,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       if (isMute) {
         _player?.setVolume(0);
       }
-      onLoaded?.call(time: _player?.duration?.inSeconds);
+      // onLoaded?.call(time: _player?.duration?.inSeconds);
       await _player?.play();
     } catch (e) {
       if (kDebugMode) {
@@ -539,7 +537,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         if (isMute) {
           _controller?.setVolume(0);
         }
-        onLoaded?.call(time: durationVideo);
+        // onLoaded?.call(time: durationVideo);
         _controller?.setLooping(true);
         if (_playAfterInitialized) {
           _controller?.play();
@@ -586,7 +584,7 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
         if (isMute) {
           _controller?.setVolume(0);
         }
-        onLoaded?.call(time: time);
+        // onLoaded?.call(time: time);
         _stateOfRenderingWidget.previewLoaded();
         _controller?.setLooping(true);
         if (_playAfterInitialized) {
@@ -697,7 +695,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   ValueNotifier<bool> isPausing = ValueNotifier(false);
 
-  InAppWebViewController? _webViewController;
+  // InAppWebViewController? _webViewController;
   TextEditingController? _textController;
   final backgroundColor = Colors.black;
   final _stateOfRenderingWidget = StateOfRenderingWidget();
@@ -710,15 +708,15 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   Future<void> onPause() async {
-    await _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+    // await _webViewController?.evaluateJavascript(
+    //     source:
+    //         "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
   }
 
   Future<void> onResume() async {
-    await _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+    // await _webViewController?.evaluateJavascript(
+    //     source:
+    //         "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
   }
 
   @override
@@ -751,75 +749,78 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             controller: _textController,
             focusNode: focusNode,
             onChanged: (value) {
-              _webViewController?.evaluateJavascript(
-                  source:
-                      'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
+              // _webViewController?.evaluateJavascript(
+              //     source:
+              //         'window.dispatchEvent(new KeyboardEvent(\'keydown\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keypress\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));window.dispatchEvent(new KeyboardEvent(\'keyup\', {\'key\': \'${value.characters.last}\',\'keyCode\': ${keysCode[value.characters.last]},\'which\': ${keysCode[value.characters.last]}}));');
               _textController?.text = '';
             },
           ),
         ),
-        InAppWebView(
-          key: Key(previewURL),
-          initialUrlRequest: inapp_webview.URLRequest(
-              url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
-          initialSettings: InAppWebViewSettings(
-            mediaPlaybackRequiresUserGesture: false,
-            useHybridComposition: true,
-            allowsInlineMediaPlayback: true,
-            preferredContentMode: UserPreferredContentMode.RECOMMENDED,
-          ),
-          initialUserScripts: UnmodifiableListView<UserScript>([
-            UserScript(source: '''
-                window.print = function () {
-                  console.log('Skip printing');
-                };
-                ''', injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)
-          ]),
-          onWebViewCreated: (controller) {
-            _webViewController = controller;
-            if (overriddenHtml != null) {
-              final uri = Uri.dataFromString(overriddenHtml!,
-                  mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
-              _webViewController?.loadUrl(
-                  urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
-            }
-          },
-          onLoadStop: (controller, uri) async {
-            _stateOfRenderingWidget.previewLoaded();
-            onLoaded?.call(webViewController: _webViewController);
-            String viewportContent =
-                Platform.isIOS ? 'width=device-width, initial-scale=1.0' : '';
-            String javascriptString = '''
-            var viewportmeta = document.querySelector('meta[name="viewport"]');
-            if (!viewportmeta) {
-              var head = document.getElementsByTagName('head')[0];
-              var viewport = document.createElement('meta');
-              viewport.setAttribute('name', 'viewport');
-              viewport.setAttribute('content', '$viewportContent');
-              head.appendChild(viewport);
-            }
-            ''';
-            await _webViewController?.evaluateJavascript(
-                source: javascriptString);
-
-            // check background color is set
-            await _webViewController?.evaluateJavascript(
-                source: '''if (document.body.style.backgroundColor == '') {
-                  document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';
-                }''');
-
-            if (!skipViewport) {
-              await _webViewController?.evaluateJavascript(
-                  source: '''document.body.style.overflow = 'hidden';''');
-            }
-
-            if (isMute) {
-              _webViewController?.evaluateJavascript(
-                  source:
-                      "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
-            }
-          },
+        Container(
+          child: Text("InAppWebView is not supported on this platform."),
         ),
+        // InAppWebView(
+        //   key: Key(previewURL),
+        //   initialUrlRequest: inapp_webview.URLRequest(
+        //       url: WebUri(overriddenHtml != null ? 'about:blank' : previewURL)),
+        //   initialSettings: InAppWebViewSettings(
+        //     mediaPlaybackRequiresUserGesture: false,
+        //     useHybridComposition: true,
+        //     allowsInlineMediaPlayback: true,
+        //     preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+        //   ),
+        //   initialUserScripts: UnmodifiableListView<UserScript>([
+        //     UserScript(source: '''
+        //         window.print = function () {
+        //           console.log('Skip printing');
+        //         };
+        //         ''', injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)
+        //   ]),
+        //   onWebViewCreated: (controller) {
+        //     _webViewController = controller;
+        //     if (overriddenHtml != null) {
+        //       final uri = Uri.dataFromString(overriddenHtml!,
+        //           mimeType: 'text/html', encoding: Encoding.getByName('utf-8'));
+        //       _webViewController?.loadUrl(
+        //           urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
+        //     }
+        //   },
+        //   onLoadStop: (controller, uri) async {
+        //     _stateOfRenderingWidget.previewLoaded();
+        //     onLoaded?.call(webViewController: _webViewController);
+        //     String viewportContent =
+        //         Platform.isIOS ? 'width=device-width, initial-scale=1.0' : '';
+        //     String javascriptString = '''
+        //     var viewportmeta = document.querySelector('meta[name="viewport"]');
+        //     if (!viewportmeta) {
+        //       var head = document.getElementsByTagName('head')[0];
+        //       var viewport = document.createElement('meta');
+        //       viewport.setAttribute('name', 'viewport');
+        //       viewport.setAttribute('content', '$viewportContent');
+        //       head.appendChild(viewport);
+        //     }
+        //     ''';
+        //     await _webViewController?.evaluateJavascript(
+        //         source: javascriptString);
+        //
+        //     // check background color is set
+        //     await _webViewController?.evaluateJavascript(
+        //         source: '''if (document.body.style.backgroundColor == '') {
+        //           document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';
+        //         }''');
+        //
+        //     if (!skipViewport) {
+        //       await _webViewController?.evaluateJavascript(
+        //           source: '''document.body.style.overflow = 'hidden';''');
+        //     }
+        //
+        //     if (isMute) {
+        //       _webViewController?.evaluateJavascript(
+        //           source:
+        //               "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+        //     }
+        //   },
+        // ),
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
         ],
@@ -849,35 +850,35 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
   @override
   void didPopNext() {
-    _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+    // _webViewController?.evaluateJavascript(
+    //     source:
+    //         "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
   }
 
   @override
   void dispose() {
     _textController?.dispose();
-    _webViewController = null;
+    // _webViewController = null;
   }
 
   @override
   Future<bool> clearPrevious() async {
-    await _webViewController?.evaluateJavascript(
-        source:
-            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+    // await _webViewController?.evaluateJavascript(
+    //     source:
+    //         "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
     return true;
   }
 
   updateWebviewSize() {
-    if (_webViewController != null) {
-      EasyDebounce.debounce(
-          'screen_rotate', // <-- An ID for this particular debouncer
-          const Duration(milliseconds: 100), // <-- The debounce duration
-          () => _webViewController?.evaluateJavascript(
-              source:
-                  "window.dispatchEvent(new Event('resize'));") // <-- The target method
-          );
-    }
+    // if (_webViewController != null) {
+    //   EasyDebounce.debounce(
+    //       'screen_rotate', // <-- An ID for this particular debouncer
+    //       const Duration(milliseconds: 100), // <-- The debounce duration
+    //       () => _webViewController?.evaluateJavascript(
+    //           source:
+    //               "window.dispatchEvent(new Event('resize'));") // <-- The target method
+    //       );
+    // }
   }
 }
 
@@ -922,7 +923,7 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
                 urlRequest: inapp_webview_macos.URLRequest(
                     url: Uri.tryParse(previewURL)));
             _stateOfRenderingWidget.previewLoaded();
-            onLoaded?.call();
+            // onLoaded?.call();
             const javascriptString = '''
                   var meta = document.createElement('meta');
                               meta.setAttribute('name', 'viewport');
