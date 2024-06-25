@@ -920,9 +920,9 @@ class WebWebviewNftRenderingWidget extends INFTRenderingWidget {
         webWebview.WebWebViewWidget(
                 PlatformWebViewWidgetCreationParams(controller: controller))
             .build(context),
-        if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
-          loadingWidget,
-        ],
+        // if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
+        //   loadingWidget,
+        // ],
       ],
     );
   }
