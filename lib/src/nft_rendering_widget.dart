@@ -24,6 +24,9 @@ import 'package:nft_rendering/src/widget/svg_image.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+import 'package:webview_flutter_web/webview_flutter_web.dart' as webWebview;
+import 'package:webview_flutter_web/webview_flutter_web.dart';
 
 /// Get nft rendering widget by type
 /// You can add and define more types by creating classes extends [INFTRenderingWidget]
@@ -157,7 +160,7 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
       return PDFNFTRenderingWidget();
     case RenderingType.modelViewer:
       return kIsWeb
-          ? ModelViewerRenderingWidget()
+          ? WebWebviewNftRenderingWidget()
           : Platform.isMacOS
               ? WebviewMacOSNFTRenderingWidget()
               : ModelViewerRenderingWidget();
@@ -169,7 +172,7 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
               : WebviewNFTRenderingWidget();
     default:
       return kIsWeb
-          ? WebviewNFTRenderingWidget()
+          ? WebWebviewNftRenderingWidget()
           : Platform.isMacOS
               ? WebviewMacOSNFTRenderingWidget()
               : WebviewNFTRenderingWidget();
@@ -767,6 +770,9 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             useHybridComposition: true,
             allowsInlineMediaPlayback: true,
             preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+            isInspectable: true,
+            iframeAllowFullscreen: true,
+            isElementFullscreenEnabled: true,
           ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
@@ -878,6 +884,65 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                   "window.dispatchEvent(new Event('resize'));") // <-- The target method
           );
     }
+  }
+}
+
+class WebWebviewNftRenderingWidget extends INFTRenderingWidget {
+  WebWebviewNftRenderingWidget({
+    RenderingWidgetBuilder? renderingWidgetBuilder,
+  }) : super(
+          renderingWidgetBuilder: renderingWidgetBuilder,
+        );
+
+  WebWebViewController? _webViewController;
+  final _stateOfRenderingWidget = StateOfRenderingWidget();
+  late Key key;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _stateOfRenderingWidget,
+      builder: (context, child) {
+        return previewURL.isEmpty
+            ? noPreviewUrlWidget
+            : _widgetBuilder(context);
+      },
+    );
+  }
+
+  Widget _widgetBuilder(BuildContext context) {
+    final controller = webWebview.WebWebViewController(
+        webWebview.WebWebViewControllerCreationParams())
+      ..loadRequest(LoadRequestParams(uri: Uri.parse(previewURL)));
+    return Stack(
+      fit: StackFit.loose,
+      children: [
+        webWebview.WebWebViewWidget(
+                PlatformWebViewWidgetCreationParams(controller: controller))
+            .build(context),
+        if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
+          loadingWidget,
+        ],
+      ],
+    );
+  }
+
+  @override
+  Future<bool> clearPrevious() async {
+    await _webViewController?.runJavaScript(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.pause(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.pause(); }");
+    return true;
+  }
+
+  @override
+  void didPopNext() {
+    _webViewController?.runJavaScriptReturningResult(
+        "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.play(); } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.play(); }");
+  }
+
+  @override
+  void dispose() {
+    _webViewController = null;
   }
 }
 
