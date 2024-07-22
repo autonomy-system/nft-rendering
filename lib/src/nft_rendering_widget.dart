@@ -930,6 +930,13 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
                               document.body.style.overflow = 'hidden';
                   ''';
             await _webViewController?.runJavascript(javascriptString);
+
+            // check background color is set
+            await _webViewController?.runJavascript(
+                '''if (document.body.style.backgroundColor == '') {
+                  document.body.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+                }''');
+
             _webViewController
                 ?.runJavascript("window.dispatchEvent(new Event('resize'));");
           },
@@ -953,7 +960,9 @@ class WebviewMacOSNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    _webViewController?.dispose();
+  }
 
   @override
   Future<bool> clearPrevious() async {
