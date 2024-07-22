@@ -159,19 +159,19 @@ INFTRenderingWidget typesOfNFTRenderingWidget(String type) {
       return kIsWeb
           ? ModelViewerRenderingWidget()
           : Platform.isMacOS
-              ? WebviewMacOSNFTRenderingWidget()
+              ? WebviewNFTRenderingWidget()
               : ModelViewerRenderingWidget();
     case RenderingType.webview:
       return kIsWeb
           ? WebviewNFTRenderingWidget()
           : Platform.isMacOS
-              ? WebviewMacOSNFTRenderingWidget()
+              ? WebviewNFTRenderingWidget()
               : WebviewNFTRenderingWidget();
     default:
       return kIsWeb
           ? WebviewNFTRenderingWidget()
           : Platform.isMacOS
-              ? WebviewMacOSNFTRenderingWidget()
+              ? WebviewNFTRenderingWidget()
               : WebviewNFTRenderingWidget();
   }
 }
