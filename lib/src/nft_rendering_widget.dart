@@ -617,7 +617,8 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
           errorBuilder: (context, url, error) => Center(
             child: errorWidget,
           ),
-          fit: BoxFit.cover,
+          width: double.infinity,
+          fit: BoxFit.contain,
         );
       } else if (_stateOfRenderingWidget.isPreviewLoaded) {
         return Stack(
