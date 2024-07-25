@@ -21,6 +21,7 @@ import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:nft_rendering/src/nft_error_widget.dart';
 import 'package:nft_rendering/src/nft_loading_widget.dart';
 import 'package:nft_rendering/src/widget/svg_image.dart';
+
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -191,6 +192,8 @@ class RenderingWidgetBuilder {
   Function({int? time, InAppWebViewController? webViewController})? onLoaded;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
+  Function(InAppWebViewController controller,
+      DownloadStartRequest downloadStartRequest)? onDownloadStartRequest;
 
   RenderingWidgetBuilder({
     this.loadingWidget,
@@ -206,6 +209,7 @@ class RenderingWidgetBuilder {
     this.isMute = false,
     this.focusNode,
     this.skipViewport = false,
+    this.onDownloadStartRequest,
   });
 }
 
@@ -244,9 +248,12 @@ abstract class INFTRenderingWidget {
     isMute = renderingWidgetBuilder.isMute;
     skipViewport = renderingWidgetBuilder.skipViewport;
     focusNode = renderingWidgetBuilder.focusNode;
+    onDownloadStartRequest = renderingWidgetBuilder.onDownloadStartRequest;
   }
 
   Function({int? time, InAppWebViewController? webViewController})? onLoaded;
+  void Function(InAppWebViewController controller,
+      DownloadStartRequest downloadStartRequest)? onDownloadStartRequest;
   Function({int? time})? onDispose;
   FocusNode? focusNode;
   Widget loadingWidget = const NFTLoadingWidget();
@@ -767,6 +774,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             useHybridComposition: true,
             allowsInlineMediaPlayback: true,
             preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+            useOnDownloadStart: onDownloadStartRequest != null,
           ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
@@ -784,6 +792,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
                   urlRequest: inapp_webview.URLRequest(url: WebUri.uri(uri)));
             }
           },
+          onDownloadStartRequest: onDownloadStartRequest,
           onLoadStop: (controller, uri) async {
             _stateOfRenderingWidget.previewLoaded();
             onLoaded?.call(webViewController: _webViewController);
