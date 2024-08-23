@@ -292,6 +292,10 @@ abstract class INFTRenderingWidget {
 
   Future<void> pauseOrResume() async {}
 
+  Future<void> pause() async {}
+
+  Future<void> resume() async {}
+
   Future<bool> clearPrevious();
 }
 
@@ -435,6 +439,20 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
     }
   }
 
+  @override
+  Future<void> pause() async {
+    if (_player?.playing == true) {
+      await _pauseAudio();
+    }
+  }
+
+  @override
+  Future<void> resume() async {
+    if (_player?.playing == false) {
+      await _resumeAudio();
+    }
+  }
+
   Future _disposeAudioPlayer() async {
     await _player?.dispose();
     _player = null;
@@ -555,6 +573,20 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     if (_controller?.value.isPlaying ?? false) {
       await _controller?.pause();
     } else {
+      await _controller?.play();
+    }
+  }
+
+  @override
+  Future<void> pause() async {
+    if (_controller?.value.isPlaying ?? false) {
+      await _controller?.pause();
+    }
+  }
+
+  @override
+  Future<void> resume() async {
+    if (!(_controller?.value.isPlaying ?? false)) {
       await _controller?.play();
     }
   }
@@ -729,6 +761,22 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
       await onPause();
     }
     isPausing.value = !isPausing.value;
+  }
+
+  @override
+  Future<void> pause() async {
+    if (isPausing.value) {
+      await onResume();
+      isPausing.value = false;
+    }
+  }
+
+  @override
+  Future<void> resume() async {
+    if (!isPausing.value) {
+      await onPause();
+      isPausing.value = true;
+    }
   }
 
   @override
