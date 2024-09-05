@@ -767,6 +767,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             useHybridComposition: true,
             allowsInlineMediaPlayback: true,
             preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+            transparentBackground: true,
           ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
@@ -804,7 +805,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
             // check background color is set
             await _webViewController?.evaluateJavascript(
-                source: '''if (document.body.style.backgroundColor == '') {
+                source: '''if (window.getComputedStyle(document.body).backgroundColor == 'rgba(0, 0, 0, 0)') {
                   document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';
                 }''');
 
