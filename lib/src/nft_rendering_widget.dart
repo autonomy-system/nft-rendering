@@ -823,26 +823,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
         ],
-        ValueListenableBuilder<bool>(
-            valueListenable: isPausing,
-            builder: (context, value, child) {
-              if (value) {
-                return const Column(
-                  children: [
-                    Center(
-                      child: Icon(
-                        Icons.play_arrow,
-                        size: 50,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text("Artwork is pausing... Tap to resume.")
-                  ],
-                );
-              } else {
-                return const SizedBox();
-              }
-            }),
       ],
     );
   }
