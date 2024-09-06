@@ -767,6 +767,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             useHybridComposition: true,
             allowsInlineMediaPlayback: true,
             preferredContentMode: UserPreferredContentMode.RECOMMENDED,
+            transparentBackground: true,
           ),
           initialUserScripts: UnmodifiableListView<UserScript>([
             UserScript(source: '''
@@ -804,7 +805,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
 
             // check background color is set
             await _webViewController?.evaluateJavascript(
-                source: '''if (document.body.style.backgroundColor == '') {
+                source: '''if (window.getComputedStyle(document.body).backgroundColor == 'rgba(0, 0, 0, 0)') {
                   document.body.style.backgroundColor = 'rgba(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue}, 1)';
                 }''');
 
@@ -823,26 +824,6 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
         if (!_stateOfRenderingWidget.isPreviewLoaded) ...[
           loadingWidget,
         ],
-        ValueListenableBuilder<bool>(
-            valueListenable: isPausing,
-            builder: (context, value, child) {
-              if (value) {
-                return const Column(
-                  children: [
-                    Center(
-                      child: Icon(
-                        Icons.play_arrow,
-                        size: 50,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text("Artwork is pausing... Tap to resume.")
-                  ],
-                );
-              } else {
-                return const SizedBox();
-              }
-            }),
       ],
     );
   }
