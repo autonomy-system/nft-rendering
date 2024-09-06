@@ -292,6 +292,14 @@ abstract class INFTRenderingWidget {
 
   Future<void> pauseOrResume() async {}
 
+  Future<void> pause() async {}
+
+  Future<void> resume() async {}
+
+  Future<void> mute() async {}
+
+  Future<void> unmute() async {}
+
   Future<bool> clearPrevious();
 }
 
@@ -435,6 +443,30 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
     }
   }
 
+  @override
+  Future<void> pause() async {
+    if (_player?.playing == true) {
+      await _pauseAudio();
+    }
+  }
+
+  @override
+  Future<void> resume() async {
+    if (_player?.playing == false) {
+      await _resumeAudio();
+    }
+  }
+
+  @override
+  Future<void> mute() async {
+    _player?.setVolume(0);
+  }
+
+  @override
+  Future<void> unmute() async {
+    _player?.setVolume(1);
+  }
+
   Future _disposeAudioPlayer() async {
     await _player?.dispose();
     _player = null;
@@ -453,7 +485,7 @@ class AudioNFTRenderingWidget extends INFTRenderingWidget {
       await _player?.setLoopMode(LoopMode.all);
       await _player?.setAudioSource(AudioSource.uri(Uri.parse(audioURL)));
       if (isMute) {
-        _player?.setVolume(0);
+        mute();
       }
       onLoaded?.call(time: _player?.duration?.inSeconds);
       await _player?.play();
@@ -557,6 +589,30 @@ class VideoNFTRenderingWidget extends INFTRenderingWidget {
     } else {
       await _controller?.play();
     }
+  }
+
+  @override
+  Future<void> pause() async {
+    if (_controller?.value.isPlaying ?? false) {
+      await _controller?.pause();
+    }
+  }
+
+  @override
+  Future<void> resume() async {
+    if (!(_controller?.value.isPlaying ?? false)) {
+      await _controller?.play();
+    }
+  }
+
+  @override
+  Future<void> mute() async {
+    _controller?.setVolume(0);
+  }
+
+  @override
+  Future<void> unmute() async {
+    _controller?.setVolume(1);
   }
 
   VideoPlayerController? _controller;
@@ -732,6 +788,36 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
   }
 
   @override
+  Future<void> pause() async {
+    if (isPausing.value) {
+      await onResume();
+      isPausing.value = false;
+    }
+  }
+
+  @override
+  Future<void> resume() async {
+    if (!isPausing.value) {
+      await onPause();
+      isPausing.value = true;
+    }
+  }
+
+  @override
+  Future<void> mute() async {
+    _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+  }
+
+  @override
+  Future<void> unmute() async {
+    _webViewController?.evaluateJavascript(
+        source:
+            "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = false; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = false; }");
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _stateOfRenderingWidget,
@@ -815,9 +901,7 @@ class WebviewNFTRenderingWidget extends INFTRenderingWidget {
             }
 
             if (isMute) {
-              _webViewController?.evaluateJavascript(
-                  source:
-                      "var video = document.getElementsByTagName('video')[0]; if(video != undefined) { video.muted = true; } var audio = document.getElementsByTagName('audio')[0]; if(audio != undefined) { audio.muted = true; }");
+              mute();
             }
           },
         ),
