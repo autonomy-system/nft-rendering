@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
 import 'package:xml/xml.dart';
+
+final nftRenderingLog = Logger('NFT rendering');
 
 class SvgImage extends StatefulWidget {
   final String url;
@@ -67,8 +70,11 @@ class _SvgImageState extends State<SvgImage> {
   final Completer<String> _svgString = Completer();
   bool _webviewLoadFailed = false;
 
+  get log => null;
+
   @override
   void initState() {
+    super.initState();
     Future(() async {
       String? svg;
       try {
@@ -83,6 +89,7 @@ class _SvgImageState extends State<SvgImage> {
         parse(svg);
         _svgString.complete(svg);
       } catch (e) {
+        nftRenderingLog.info("rendering svg ${e.toString()}");
         if (svg != null) {
           _svgString.completeError(SvgNotSupported(svg));
         } else {
@@ -90,7 +97,6 @@ class _SvgImageState extends State<SvgImage> {
         }
       }
     });
-    super.initState();
   }
 
   @override
